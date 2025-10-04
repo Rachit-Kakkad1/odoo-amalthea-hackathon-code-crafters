@@ -4,46 +4,170 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Approvals to Review</title>
-    <!-- Tailwind CSS for styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts for a slightly stylized look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Custom styles to better match the hand-drawn feel */
+        /* --- General Variables & Setup --- */
+        :root {
+            --success-color: #166534;
+            --error-color: #b91c1c;
+            --primary-color: #4f46e5;
+            --bg-dark: #1a1a1a;
+            --bg-card: #262626;
+            --bg-header: #374151;
+            --border-color: #444;
+            --text-light: #f9fafb;
+            --text-med: #d1d5db;
+            --text-dark: #9ca3af;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #1a1a1a; /* Darker background */
+            background-color: var(--bg-dark);
+            color: var(--text-med);
+            margin: 0;
+            padding: 2.5rem;
         }
+
+        @media (max-width: 768px) {
+            body { padding: 1.5rem; }
+        }
+        @media (max-width: 640px) {
+            body { padding: 1rem; }
+        }
+
+        /* --- Main Layout --- */
+        .main-container {
+            max-width: 80rem; /* 1280px */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        h1 {
+            font-size: 1.5rem; /* 24px */
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+
         .table-container {
-            border: 1px solid #444;
+            border: 1px solid var(--border-color);
             border-radius: 0.75rem;
             padding: 1rem;
-            background-color: #262626; /* Slightly lighter container background */
+            background-color: var(--bg-card);
         }
+
         .search-bar {
-            border: 1px solid #444;
+            border: 1px solid var(--border-color);
             border-radius: 0.5rem;
             height: 2.5rem;
             margin-bottom: 1rem;
+            background-color: var(--bg-header);
+        }
+
+        /* --- Filter Controls --- */
+        .filter-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border-color);
+            color: var(--text-med);
+            background-color: transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover {
+            background-color: var(--bg-header);
+        }
+        .filter-btn.active-filter {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* --- Input Form --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border: 1px solid #374151;
+            border-radius: 0.5rem;
+        }
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group.align-end {
+            justify-content: flex-end;
+        }
+        .form-group label {
+            font-size: 0.75rem;
+            color: var(--text-dark);
+            margin-bottom: 0.25rem;
+        }
+        .form-input {
+            background-color: var(--bg-header);
+            border: 1px solid #4b5563;
+            color: var(--text-med);
+            border-radius: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* --- Table Styles --- */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
         th, td {
-            border: 1px solid #444;
+            border: 1px solid var(--border-color);
             padding: 0.75rem 1rem;
-            color: #d1d5db; /* Light gray text */
             vertical-align: middle;
-            transition: background-color 0.3s ease; /* Smooth transition for color change */
+            transition: background-color 0.3s ease;
         }
         th {
             font-weight: 600;
-            color: #f9fafb; /* White header text */
-            background-color: #374151; /* Darker header background */
+            color: var(--text-light);
+            background-color: var(--bg-header);
+            text-align: left;
+        }
+        th .subtitle {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: var(--text-dark);
         }
         thead tr:first-child th:first-child { border-top-left-radius: 0.5rem; }
         thead tr:first-child th:last-child { border-top-right-radius: 0.5rem; }
         tbody tr:last-child td:first-child { border-bottom-left-radius: 0.5rem; }
-        tbody tr:last-child td:last-child { border-bottom-right-radius: 0.5rem; }
+        tbody tr:last-child td:last-child td { border-bottom-right-radius: 0.5rem; }
+        .status-cell {
+            text-transform: capitalize;
+        }
+        .action-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        /* --- Button Styles --- */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -55,113 +179,98 @@
             transition: all 0.2s;
             width: 100%;
             font-weight: 500;
+            box-sizing: border-box;
         }
-        .accept-btn { background-color: #166534; border: 1px solid #14532d; color: white; }
+        .accept-btn { background-color: var(--success-color); border: 1px solid #14532d; color: white; }
         .accept-btn:hover:not(:disabled) { background-color: #15803d; }
-        .reject-btn { background-color: transparent; border: 1px solid #9ca3af; color: #d1d5db; }
-        .reject-btn:hover:not(:disabled) { background-color: #b91c1c; border-color: #991b1b; color: white; }
+        .reject-btn { background-color: transparent; border: 1px solid var(--text-dark); color: var(--text-med); }
+        .reject-btn:hover:not(:disabled) { background-color: var(--error-color); border-color: #991b1b; color: white; }
+        .add-btn { background-color: var(--primary-color); color: white; }
         .btn:disabled { cursor: not-allowed; opacity: 0.7; }
+
+        /* --- Row Status Styles --- */
         .row-accepted td { background-color: #143622 !important; }
         .row-rejected td { background-color: #450a0a !important; }
-        .reject-btn.rejected { background-color: #b91c1c; border-color: #991b1b; color: white; }
-        .form-input {
-            background-color: #374151;
-            border: 1px solid #4b5563;
-            color: #d1d5db;
-            border-radius: 0.375rem;
-            padding: 0.5rem 0.75rem;
-            width: 100%;
-        }
-        .add-btn {
-            background-color: #4f46e5;
+        .reject-btn.rejected { background-color: var(--error-color); border-color: #991b1b; color: white; }
+
+        /* --- Message Box --- */
+        .message-box {
+            position: fixed;
+            bottom: 1.25rem;
+            right: 1.25rem;
             color: white;
-            justify-content: center;
-        }
-        /* Styles for new filter buttons */
-        .filter-btn {
             padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            border: 1px solid #4b5563;
-            color: #d1d5db;
-            background-color: transparent;
-            transition: all 0.2s;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            transition: opacity 0.5s;
+            opacity: 0;
+            pointer-events: none;
         }
-        .filter-btn:hover {
-            background-color: #374151;
+        .message-box.is-visible {
+            opacity: 1;
+            pointer-events: auto;
         }
-        .filter-btn.active-filter {
-            background-color: #4f46e5;
-            border-color: #4f46e5;
-            color: white;
-        }
+        .message-box.is-success { background-color: var(--success-color); }
+        .message-box.is-error { background-color: var(--error-color); }
     </style>
 </head>
-<body class="p-4 sm:p-6 md:p-10">
+<body>
 
-    <div class="max-w-7xl mx-auto">
-        <h1 class="text-2xl font-semibold text-gray-200 mb-4">Approvals to review</h1>
+    <div class="main-container">
+        <h1>Approvals to review</h1>
 
         <div class="table-container">
-            <!-- Placeholder for a search bar as seen in the image -->
             <div class="search-bar"></div>
 
-            <!-- Filter Buttons -->
-            <div class="flex space-x-2 mb-4">
+            <div class="filter-controls">
                 <button class="filter-btn active-filter" data-filter="all">All</button>
                 <button class="filter-btn" data-filter="pending">Pending</button>
                 <button class="filter-btn" data-filter="accepted">Accepted</button>
                 <button class="filter-btn" data-filter="rejected">Rejected</button>
             </div>
             
-            <!-- Input Form -->
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4 p-4 border border-gray-700 rounded-lg">
-                <div>
-                    <label for="subject" class="text-xs text-gray-400">Subject</label>
-                    <input type="text" id="subject" class="form-input" >
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="subject">Subject</label>
+                    <input type="text" id="subject" class="form-input">
                 </div>
-                <div>
-                    <label for="owner" class="text-xs text-gray-400">Owner</label>
+                <div class="form-group">
+                    <label for="owner">Owner</label>
                     <input type="text" id="owner" class="form-input">
                 </div>
-                <div>
-                    <label for="category" class="text-xs text-gray-400">Category</label>
-                    <input type="text" id="category" class="form-input" >
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <input type="text" id="category" class="form-input">
                 </div>
-                <div>
-                    <label for="amount" class="text-xs text-gray-400">Amount ($)</label>
-                    <input type="number" id="amount" class="form-input" >
+                <div class="form-group">
+                    <label for="amount">Amount ($)</label>
+                    <input type="number" id="amount" class="form-input">
                 </div>
-                <div class="self-end">
+                <div class="form-group align-end">
                     <button id="add-request-btn" class="btn add-btn">Add Request</button>
                 </div>
             </div>
 
-            <!-- Table -->
-            <div class="overflow-x-auto">
-                <table class="min-w-full border-collapse">
-                    <thead class="text-left text-sm">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
                         <tr>
                             <th>Approval Subject</th>
                             <th>Request Owner</th>
                             <th>Category</th>
                             <th>Request Status</th>
-                            <th>
-                                Total amount
-                                <span class="block text-xs font-normal text-gray-400">(in company's currency)</span>
-                            </th>
-                            <th class="text-center">Action</th>
+                            <th>Total amount <span class="subtitle">(in company's currency)</span></th>
+                            <th style="text-align: center;">Action</th>
                         </tr>
                     </thead>
-                    <tbody id="request-body" class="text-sm">
-                        <!-- Table rows will be dynamically inserted here -->
-                    </tbody>
+                    <tbody id="request-body">
+                        </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Message Box for notifications -->
-    <div id="message-box" class="fixed bottom-5 right-5 text-white py-2 px-4 rounded-lg shadow-lg transition-opacity duration-500 opacity-0 pointer-events-none bg-green-600">
+    <div id="message-box" class="message-box">
         Message goes here
     </div>
 
@@ -175,13 +284,14 @@
         const amountInput = document.getElementById('amount');
         const addBtn = document.getElementById('add-request-btn');
         const requestBody = document.getElementById('request-body');
+        const messageBox = document.getElementById('message-box');
 
         function showMessage(message, type = 'success') {
-            const messageBox = document.getElementById('message-box');
             messageBox.textContent = message;
-            messageBox.className = fixed bottom-5 right-5 text-white py-2 px-4 rounded-lg shadow-lg transition-opacity duration-500 opacity-0 pointer-events-none ${type === 'success' ? 'bg-green-600' : 'bg-red-600'};
-            messageBox.classList.remove('opacity-0');
-            setTimeout(() => { messageBox.classList.add('opacity-0'); }, 3000);
+            messageBox.classList.remove('is-success', 'is-error');
+            messageBox.classList.add(type === 'success' ? 'is-success' : 'is-error');
+            messageBox.classList.add('is-visible');
+            setTimeout(() => { messageBox.classList.remove('is-visible'); }, 3000);
         }
 
         function saveRequests() {
@@ -190,57 +300,37 @@
 
         function renderRequests() {
             requestBody.innerHTML = '';
-
-            const filteredRequests = requests.filter(req => {
-                if (currentFilter === 'all') return true;
-                return req.status === currentFilter;
-            });
+            const filteredRequests = requests.filter(req => currentFilter === 'all' || req.status === currentFilter);
 
             if (filteredRequests.length === 0) {
-                requestBody.innerHTML = <tr><td colspan="6" class="text-center text-gray-500 py-4">No requests match the current filter.</td></tr>;
+                requestBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #6b7280; padding: 1rem;">No requests match the current filter.</td></tr>`;
                 return;
             }
 
             filteredRequests.forEach((req) => {
                 const originalIndex = requests.findIndex(originalReq => originalReq === req);
                 const row = document.createElement('tr');
-                let rowClass = '';
-                if (req.status === 'accepted') rowClass = 'row-accepted';
-                if (req.status === 'rejected') rowClass = 'row-rejected';
-                row.className = rowClass;
+                if (req.status === 'accepted') row.className = 'row-accepted';
+                if (req.status === 'rejected') row.className = 'row-rejected';
 
                 let actionButtonsHTML = '';
                 if (req.status === 'pending') {
                     actionButtonsHTML = `
-                        <button class="btn accept-btn" onclick="handleAction(${originalIndex}, 'success')">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-                            <span>Accept</span>
-                        </button>
-                        <button class="btn reject-btn" onclick="handleAction(${originalIndex}, 'error')">
-                           <svg xmlns="http://www.w.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                           <span>Reject</span>
-                        </button>`;
+                        <button class="btn accept-btn" onclick="handleAction(${originalIndex}, 'success')">Accept</button>
+                        <button class="btn reject-btn" onclick="handleAction(${originalIndex}, 'error')">Reject</button>`;
                 } else if (req.status === 'accepted') {
-                    actionButtonsHTML = `
-                        <button class="btn accept-btn" disabled>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-                            <span>Accepted</span>
-                        </button>`;
-                } else { // rejected
-                    actionButtonsHTML = `
-                        <button class="btn reject-btn rejected" disabled>
-                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                           <span>Rejected</span>
-                        </button>`;
+                    actionButtonsHTML = `<button class="btn accept-btn" disabled>Accepted</button>`;
+                } else {
+                    actionButtonsHTML = `<button class="btn reject-btn rejected" disabled>Rejected</button>`;
                 }
                 
                 row.innerHTML = `
                     <td>${req.subject}</td>
                     <td>${req.owner}</td>
                     <td>${req.category}</td>
-                    <td class="status-cell capitalize">${req.status}</td>
-                    <td>${req.amount}$</td>
-                    <td class="flex items-center justify-center space-x-2">${actionButtonsHTML}</td>
+                    <td class="status-cell">${req.status}</td>
+                    <td>$${parseFloat(req.amount).toFixed(2)}</td>
+                    <td><div class="action-cell">${actionButtonsHTML}</div></td>
                 `;
                 requestBody.appendChild(row);
             });
@@ -249,7 +339,7 @@
         function handleAction(index, type) {
             const action = type === 'success' ? 'accepted' : 'rejected';
             requests[index].status = action;
-            showMessage(Request ${action}!, type);
+            showMessage(`Request ${action}!`, type);
             saveRequests();
             renderRequests();
         }
@@ -267,35 +357,26 @@
         }
 
         addBtn.addEventListener('click', () => {
-            const subject = subjectInput.value.trim();
-            const owner = ownerInput.value.trim();
-            const category = categoryInput.value.trim();
-            const amount = amountInput.value.trim();
-
-            if (!subject || !owner || !category || !amount) {
+            if (!subjectInput.value || !ownerInput.value || !categoryInput.value || !amountInput.value) {
                 showMessage('Please fill out all fields.', 'error');
                 return;
             }
-
             requests.push({
-                subject,
-                owner,
-                category,
-                amount,
+                subject: subjectInput.value,
+                owner: ownerInput.value,
+                category: categoryInput.value,
+                amount: amountInput.value,
                 status: 'pending'
             });
-
             saveRequests();
             renderRequests();
-
-            // Clear inputs
             subjectInput.value = '';
             ownerInput.value = '';
             categoryInput.value = '';
             amountInput.value = '';
+            showMessage('Request added successfully!', 'success');
         });
 
-        // Initial load
         document.addEventListener('DOMContentLoaded', () => {
             const storedRequests = localStorage.getItem('approvalRequests');
             if (storedRequests) {

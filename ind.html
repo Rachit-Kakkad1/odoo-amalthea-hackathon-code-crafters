@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expense Management System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1a237e, #3949ab);
+      color: white;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+
+    p {
+      font-size: 1.2rem;
+      max-width: 600px;
+      opacity: 0.85;
+      margin-bottom: 40px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 20px;
+    }
+
+    .btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 30px;
+      background-color: white;
+      color: #1a237e;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #303f9f;
+      color: white;
+      transform: scale(1.05);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    footer {
+      position: absolute;
+      bottom: 15px;
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    /* Subtle fade-in animation */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h1, p, .buttons {
+      animation: fadeIn 1s ease forwards;
+    }
+
+    h1 { animation-delay: 0.2s; }
+    p { animation-delay: 0.4s; }
+    .buttons { animation-delay: 0.6s; }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 2rem;
+      }
+      p {
+        font-size: 1rem;
+      }
+      .btn {
+        padding: 10px 25px;
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Expense Management System</h1>
+  <p>Track, analyze, and control your expenses easily. A smart solution for individuals and businesses.</p>
+
+  <div class="buttons">
+    <button class="btn" onclick="window.location.href='manager-login.html'">Manager Login</button>
+    <button class="btn" onclick="window.location.href='employee-login.html'">Employee Login</button>
+    <button class="btn" onclick="window.location.href='about.html'">About</button>
+  </div>
+
+  <footer>© 2025 Expense Management System | Designed by Nishit</footer>
+</body>
+</html>
