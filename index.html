@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LedgerCore - Expense Management</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+
+
+<style>
+    :root {
+        --primary-color: #8b5cf6; /* A slightly brighter purple for dark mode */
+        --primary-color-darker: #2575fc;
+        --solid-black: #111827; /* Dark blue-gray background */
+        --text-color: #F9FAFB; /* Off-white text */
+        --text-color-muted: #9CA3AF; /* Lighter gray for muted text */
+        --card-bg-dark: rgba(31, 41, 55, 0.5); 
+        --card-border-dark: rgba(255, 255, 255, 0.1);
+    }
+    html {
+        background-color: var(--solid-black);
+    }
+    body {
+        font-family: "Segoe UI", "Poppins", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--solid-black);
+        color: var(--text-color);
+        margin: 0;
+        min-height: 100vh;
+    }
+    #root {
+        width: 100%;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        box-sizing: border-box;
+        position: relative;
+        overflow-x: hidden;
+    }
+    
+    .view-container {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        animation: fadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px) scale(0.98); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* --- Landing Page Styles --- */
+    .landing-page {
+        width: 100%;
+        color: var(--text-color);
+        background-color: #111827;
+    }
+    .landing-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        max-width: 1280px;
+        margin: 0 auto;
+    }
+    .landing-nav .logo { font-weight: 700; font-size: 1.5rem; color: #F9FAFB; }
+    .landing-nav .nav-links a { margin: 0 1rem; text-decoration: none; color: var(--text-color-muted); font-weight: 600; }
+    .landing-nav .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 8px; background-color: var(--primary-color); color: white; cursor: pointer; font-weight: 600; transition: background-color 0.3s; }
+    .landing-nav .btn:hover { background-color: #7c3aed; }
+
+    .hero-section {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4rem 2rem;
+        max-width: 1280px;
+        margin: 0 auto;
+        gap: 2rem;
+    }
+    .hero-content {
+        max-width: 500px;
+    }
+    .hero-content h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+        color: #F9FAFB;
+    }
+    .hero-content p {
+        font-size: 1.1rem;
+        color: var(--text-color-muted);
+        margin-bottom: 2rem;
+    }
+
+    /* --- MODIFIED HERO BUTTON STYLES --- */
+    .hero-buttons .btn {
+        margin-right: 1rem;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border: 2px solid transparent; /* Added for consistent sizing with outline button */
+    }
+    .hero-buttons .btn-secondary {
+        background-color: transparent;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+    }
+    .hero-buttons .btn-secondary:hover {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .hero-image img {
+        width: 100%;
+        max-width: 600px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    .trusted-section {
+        background-color: #1F2937;
+        padding: 3rem 2rem;
+        text-align: center;
+    }
+    .trusted-section h3 {
+        color: var(--text-color-muted);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 2rem;
+    }
+    .logos {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 3rem;
+        filter: grayscale(100%) invert(1);
+        opacity: 0.6;
+    }
+    /* --- Auth Page (Login/Sign Up) Styles --- */
+    .auth-wrapper {
+        width: 100%;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+    
+    .signup-box {
+        background: var(--card-bg-dark);
+        backdrop-filter: blur(15px);
+        border: 1px solid var(--card-border-dark);
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        width: 100%;
+        max-width: 420px;
+        text-align: center;
+    }
+    .signup-box h2 {
+        border: none;
+        padding-bottom: 0;
+        margin-bottom: 10px;
+        color: var(--text-color);
+        font-size: 28px;
+        text-shadow: 0 0 8px rgba(139, 92, 246, 0.6);
+    }
+    .signup-box p {
+        color: var(--text-color-muted);
+        margin-bottom: 30px;
+    }
+    .auth-wrapper .input-group {
+        position: relative;
+        margin-bottom: 25px;
+        text-align: left;
+    }
+    .auth-wrapper input, .auth-wrapper select {
+        width: 100%;
+        padding: 14px;
+        box-sizing: border-box;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--text-color);
+        outline: none;
+        transition: all 0.3s;
+    }
+    .auth-wrapper input::placeholder { color: transparent; }
+    .auth-wrapper label {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        color: var(--text-color-muted);
+        pointer-events: none;
+        transition: all 0.3s ease-out;
+    }
+    .auth-wrapper input:focus + label, .auth-wrapper input:not(:placeholder-shown) + label {
+        top: -10px;
+        left: 10px;
+        transform: scale(0.85);
+        background-color: var(--primary-color);
+        padding: 2px 8px;
+        border-radius: 4px;
+        color: #fff;
+        font-weight: 600;
+    }
+    .auth-wrapper button[type="submit"] {
+        width: 100%;
+        padding: 14px;
+        background-color: var(--primary-color);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease-out;
+        margin-top: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+     .auth-wrapper button[type="submit"]:hover {
+        background-color: #7c3aed;
+    }
+    .login-link { color: var(--text-color-muted); }
+    .login-link a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .role-selector { display: flex; gap: 10px; margin-bottom: 25px; }
+    .role-selector button {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: transparent;
+        color: var(--text-color-muted);
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .role-selector button.active {
+        background: var(--primary-color);
+        color: #fff;
+        border-color: var(--primary-color);
+    }
+    
+    /* --- Dashboard Styles --- */
+    .dashboard-wrapper {
+        max-width: 1280px;
+        width: 100%;
+        margin: auto;
+        position: relative;
+        z-index: 1;
+        padding: 1rem;
+    }
+    .dashboard h2, .dashboard h3 {
+        margin: 1rem 0 0.75rem;
+        color: var(--primary-color);
+        border-bottom: 1px solid #374151;
+        padding-bottom: 8px;
+    }
+    .dashboard { display: grid; grid-template-columns: repeat(auto-fit,minmax(350px,1fr)); gap: 24px; }
+    .card {
+        background-color: #1F2937;
+        border: 1px solid #374151;
+        padding: 16px 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    ul { list-style: none; margin: 0; padding: 0; }
+    li {
+        background: #374151;
+        margin-bottom: 12px;
+        padding: 12px 16px;
+        border-radius: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #4B5563;
+    }
+    button.approve-btn, button.reject-btn, button.logout-btn, button.delete-btn { margin-left: 12px; padding: 6px 16px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease; }
+    button.approve-btn { background-color: #16a34a; color: white; }
+    button.reject-btn, button.logout-btn { background-color: #dc2626; color: white; }
+    button.delete-btn { background-color: #9ca3af; color: #1f2937; }
+    .message { margin-top: 16px; text-align: center; padding: 12px 16px; border-radius: 8px; font-weight: 700; }
+    .message.error { background-color: #7f1d1d; color: #fecaca; }
+    .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+    .summary-card {
+        background: #1F2937;
+        text-align: center;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #374151;
+    }
+    .summary-card .value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+    .summary-card .label {
+        font-size: 0.9rem;
+        color: var(--text-color-muted);
+    }
+
+    .dashboard-wrapper input, .dashboard-wrapper select {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        border: 1px solid #4B5563;
+        border-radius: 8px;
+        background-color: #374151;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+    .dashboard-wrapper form input, .dashboard-wrapper form select {
+        margin-bottom: 1rem;
+    }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// --- MOCK DATABASE ---
+const mockDatabase = {
+  users: [
+    { id: 1, name: "Alice Admin", email: "admin@test.com", password: "password", role: "ADMIN", managerId: null },
+    { id: 2, name: "Mike Manager", email: "manager@test.com", password: "password", role: "MANAGER", managerId: 1 },
+    { id: 3, name: "Erin Employee", email: "employee@test.com", password: "password", role: "EMPLOYEE", managerId: 2 },
+    { id: 4, name: "Sam Employee", email: "sam@test.com", password: "password", role: "EMPLOYEE", managerId: 2 },
+  ],
+  expenses: [
+     { id: 101, employeeId: 3, name: "Client Lunch", amount: 2500, category: "Meals", date: "2025-10-01", status: "PENDING" },
+     { id: 102, employeeId: 4, name: "Office Supplies", amount: 1200, category: "Supplies", date: "2025-10-02", status: "APPROVED" },
+     { id: 103, employeeId: 3, name: "Taxi Fare", amount: 800, category: "Travel", date: "2025-09-28", status: "REJECTED" },
+     { id: 104, employeeId: 4, name: "Software License", amount: 5000, category: "Software", date: "2025-10-03", status: "MANAGER_APPROVED" },
+  ],
+};
+// --- END MOCK DATABASE ---
+
+// --- COMPONENT 1: PROFESSIONAL LANDING PAGE ---
+function LandingPage({ switchToLogin, switchToSignUp }) {
+    return (
+        <div className="landing-page">
+            <nav className="landing-nav">
+                <div className="logo">LedgerCore</div>
+                <div className="nav-links">
+                    <a href="#">Solutions</a>
+                    <a href="#">Platform</a>
+                    <a href="#">Pricing</a>
+                    <a href="#">Company</a>
+                </div>
+                <div>
+                    <button className="btn" onClick={switchToLogin}>Login</button>
+                </div>
+            </nav>
+            <section className="hero-section">
+                <div className="hero-content">
+                    <h1>Expense management software</h1>
+                    <p>Choose expense management software that shows you employee expenses in real time. Monitor team budgets, track requests and approvals, reimburse expenses, and embrace admin.</p>
+                    <div className="hero-buttons">
+                        <button className="btn" onClick={switchToSignUp}>Sign Up</button>
+                        <button className="btn btn-secondary" onClick={switchToLogin}>Login</button>
+                    </div>
+                </div>
+                <div className="hero-image">
+                    <img src="https://res.cloudinary.com/ddmt5vrxi/image/upload/v1759568782/WhatsApp_Image_2025-10-04_at_14.32.14_bb031eed_rhiykz.jpg" alt="Expense management app screenshot" />
+                </div>
+            </section>
+            <section className="trusted-section">
+                <h3>THOUSANDS OF WORLD-CLASS COMPANIES STREAMLINE EXPENSES WITH LedgerCore</h3>
+                <div className="logos">
+                    <span>ALGOLIA</span>
+                    <span>ITRS</span>
+                    <span>Habito</span>
+                    <span>SECURA</span>
+                    <span>NICKEL</span>
+                </div>
+            </section>
+        </div>
+    );
+}
+
+// --- COMPONENT 2: SIGN UP PAGE ---
+function SignUpPage({ onSignUp, switchToLogin, error }) {
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [role, setRole] = useState('EMPLOYEE');
+    const handleSubmit = (e) => { e.preventDefault(); onSignUp({ name, email, password, confirmPassword, role }); };
+
+    return (
+        <div className="auth-wrapper">
+             <div className="signup-box">
+                <h2>Create Your Account</h2>
+                <form onSubmit={handleSubmit}>
+                    <div className="input-group"><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder=" " required /><label>Full Name</label></div>
+                    <div className="input-group"><input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder=" " required /><label>Email</label></div>
+                    <div className="input-group">
+                        <div className="role-selector">
+                             <button type="button" onClick={() => setRole('EMPLOYEE')} className={role === 'EMPLOYEE' ? 'active' : ''}>Employee</button>
+                             <button type="button" onClick={() => setRole('MANAGER')} className={role === 'MANAGER' ? 'active' : ''}>Manager</button>
+                             <button type="button" onClick={() => setRole('ADMIN')} className={role === 'ADMIN' ? 'active' : ''}>Admin</button>
+                        </div>
+                    </div>
+                    <div className="input-group"><input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder=" " required minLength="8" /><label>Password</label></div>
+                    <div className="input-group"><input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder=" " required /><label>Confirm Password</label></div>
+                    <button type="submit">Sign Up</button>
+                </form>
+                {error && <div className="message error">{error}</div>}
+                <div className="login-link">Already have an account? <a onClick={switchToLogin}>Log In</a></div>
+            </div>
+        </div>
+    );
+}
+
+// --- COMPONENT 3: LOGIN PAGE ---
+function LoginPage({ onLogin, switchToSignUp, error }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const handleSubmit = (e) => { e.preventDefault(); onLogin(email, password); };
+
+  return (
+    <div className="auth-wrapper">
+        <div className="signup-box">
+            <h2>Welcome Back</h2>
+            <form onSubmit={handleSubmit}>
+                <div className="input-group"><input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder=" " required /><label>Email</label></div>
+                <div className="input-group"><input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder=" " required /><label>Password</label></div>
+                <button type="submit">Login</button>
+            </form>
+            {error && <div className="message error">{error}</div>}
+            <div className="login-link">Don't have an account? <a onClick={switchToSignUp}>Sign Up</a></div>
+        </div>
+    </div>
+  );
+}
+
+// --- COMPONENT 4: EMPLOYEE DASHBOARD (IFRAME) ---
+function EmployeeDashboardPro({loggedInUser}){
+    const dashboardHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Expense Tracker — Pro Futuristic</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
+  <style>
+:root {
+  --bg-0: #0b1020; --bg-1: linear-gradient(135deg,#0b1220,#08101a); --card-bg: rgba(255,255,255,0.03); --glass-bg: rgba(255,255,255,0.04); --muted: rgba(255,255,255,0.6); --accent: #2ecc71; --accent-2: #4facfe; --danger: #ff6b6b; --success: #2ecc71; --shadow: 0 12px 40px rgba(2,6,23,0.55); --max-width: 1200px; --radius: 14px; --glass-border: rgba(255,255,255,0.04); --glass-border-dark: rgba(255,255,255,0.02); --glass-blur: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html,body { height: 100%; }
+body {
+  font-family: "Poppins", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: var(--bg-1); color: #e8eef6; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; padding: 28px; transition: background 300ms ease, color 300ms ease;
+}
+.container { max-width: var(--max-width); margin: 0 auto; display: grid; grid-template-columns: 1fr 380px; gap: 22px; align-items: start; position: relative; }
+@media (max-width: 980px) { .container { grid-template-columns: 1fr; padding-bottom: 80px; } }
+.header { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.brand { display:flex; gap:12px; align-items:center; }
+.brand .logo { width: 48px; height:48px; border-radius:10px; background: linear-gradient(135deg,#1b3b5f,#3a6ea5); display:flex; align-items:center; justify-content:center; box-shadow: 0 6px 18px rgba(0,0,0,0.45), 0 0 30px rgba(74,144,226,0.06) inset; font-weight:700; color:#fff; }
+.brand h1 { font-size: 1.2rem; letter-spacing: 0.4px; color: #f5f9ff; font-weight:700; }
+.header .controls { display:flex; gap:10px; align-items:center; }
+.btn { background: rgba(255,255,255,0.04); color: #fff; border: none; padding: 8px 12px; border-radius: 10px; cursor:pointer; font-weight:700; transition: transform .12s ease, background .12s ease, box-shadow .12s ease; box-shadow: 0 6px 18px rgba(2,6,23,0.45); }
+.btn:active { transform: translateY(1px); }
+.btn:hover { transform: translateY(-2px); }
+.btn.primary { background: linear-gradient(90deg,var(--accent), var(--accent-2)); color: #fff; box-shadow: 0 10px 30px rgba(46,204,113,0.08); }
+.btn.ghost { background: transparent; border: 1px solid rgba(255,255,255,0.06); }
+.toast-wrap { position: fixed; right: 18px; bottom: 18px; z-index: 1200; display:flex; flex-direction:column; gap:8px; }
+.toast { background: rgba(0,0,0,0.6); color: #fff; padding:10px 14px; border-radius:10px; font-weight:600; min-width:180px; box-shadow: 0 8px 36px rgba(0,0,0,0.5); }
+.card { background: var(--card-bg); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); border: 1px solid var(--glass-border); backdrop-filter: blur(var(--glass-blur)); transition: transform .14s ease, box-shadow .14s ease; }
+.card:hover { transform: translateY(-6px); box-shadow: 0 18px 60px rgba(2,6,23,0.6); }
+.input { padding:10px 12px; border-radius:10px; min-width:150px; border:1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.03); color: #eaf4ff; font-weight:500; }
+.input:focus { outline: none; box-shadow: 0 6px 24px rgba(74,144,226,0.06); border-color: rgba(74,144,226,0.12); }
+.label { font-size: 13px; color: var(--muted); margin-bottom:6px; display:block; }
+.table-wrap { overflow:auto; border-radius:10px; margin-top:10px; }
+table { width:100%; border-collapse:collapse; min-width:720px; color:#e9f6ff; }
+thead th { padding:12px 14px; text-align:left; position: sticky; top: 0; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); font-weight:700; font-size:13px; color:#cfe9ff; }
+tbody td { padding:12px 14px; border-top: 1px dashed rgba(255,255,255,0.03); font-size:14px; }
+tbody tr:nth-child(even) { background: rgba(255,255,255,0.012); }
+tbody tr:hover { background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.03)); }
+.badge { padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px; color:#042; }
+.badge.food { background:#ffd3d3; } .badge.travel { background:#cff3e1; } .badge.shopping { background:#dbe9ff; } .badge.bills { background:#ffe7c9; } .badge.other { background:#e6d9ff; }
+.sidebar { display:flex; flex-direction:column; gap:14px; }
+.total-box { text-align:center; padding:18px; border-radius:12px; }
+.total-amount { font-size:22px; font-weight:800; color: var(--accent-2); }
+.progress { width:100%; height:12px; background: rgba(255,255,255,0.03); border-radius:999px; overflow:hidden; }
+.progress > i { display:block; height:100%; width:0%; background: linear-gradient(90deg, var(--accent), #a0f0e0); transition: width .6s ease; }
+.charts canvas { background: transparent; border-radius:8px; width:100% !important; height:230px !important; }
+.pager { display:flex; gap:8px; align-items:center; justify-content:center; margin-top:12px; }
+.page-btn { padding:8px 10px; border-radius:8px; border: none; background: rgba(255,255,255,0.03); color: #fff; cursor:pointer; }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: none; align-items:center; justify-content:center; z-index: 1400; }
+.modal { background: linear-gradient(180deg,#051426,#09203f); padding: 18px; border-radius:12px; min-width:320px; max-width:600px; border:1px solid rgba(255,255,255,0.04); box-shadow: 0 18px 60px rgba(0,0,0,0.6); }
+.muted { color: rgba(255,255,255,0.55); font-size:13px; }
+@media (max-width: 760px) { .table-wrap table { min-width: 600px; font-size: 13px; } .brand h1 { font-size: 1.0rem; } }
+  <\/style>
+</head>
+<body>
+  <div class="toast-wrap" id="toasts"><\/div>
+  <div class="container">
+    <div class="header">
+      <div class="brand">
+        <div class="logo">ET</div>
+        <div>
+          <h1>Welcome, ${loggedInUser.name}<\/h1>
+          <div class="muted" style="font-size:12px">Log your expenses here before submitting.<\/div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn primary" id="submitForApprovalBtn">🚀 Submit for Approval<\/button>
+        <button class="btn ghost" id="importBtn">📥 Import<\/button>
+        <input type="file" id="csvFile" accept=".csv" style="display:none" />
+        <button class="btn ghost" id="exportCSVBtn">📤 Export<\/button>
+      </div>
+    </div>
+    <main class="card">
+      <section>
+        <form id="expenseForm">
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+            <div style="flex:1; min-width:160px;">
+              <label class="label">Name<\/label>
+              <input id="name" class="input" placeholder="e.g., Coffee" required />
+            <\/div>
+            <div style="width:140px;">
+              <label class="label">Amount<\/label>
+              <input id="amount" class="input" type="number" step="0.01" placeholder="₹" required />
+            <\/div>
+            <div style="width:170px;">
+              <label class="label">Category<\/label>
+              <input id="category" class="input" placeholder="Food, Travel..." required />
+            <\/div>
+            <div style="width:170px;">
+              <label class="label">Date<\/label>
+              <input id="date" class="input" type="date" required />
+            <\/div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <button class="btn primary" id="addBtn" type="submit">➕ Add<\/button>
+            <\/div>
+          <\/div>
+        <\/form>
+      <\/section>
+      <section style="margin-top:18px;">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-sort="name">Name ⬍<\/th>
+                <th data-sort="amount">Amount ⬍<\/th>
+                <th data-sort="category">Category ⬍<\/th>
+                <th data-sort="date">Date ⬍<\/th>
+                <th>Actions<\/th>
+              <\/tr>
+            <\/thead>
+            <tbody id="expensesTable"><\/tbody>
+          <\/table>
+        <\/div>
+        <div class="pager" id="pager"><\/div>
+      <\/section>
+    <\/main>
+    <aside class="sidebar">
+      <div class="card total-box">
+        <div class="small">Total Unsubmitted<\/div>
+        <div class="total-amount" id="totalAmount">₹0<\/div>
+      <\/div>
+      <div class="card charts">
+        <strong>Category Breakdown<\/strong>
+        <canvas id="categoryChart"><\/canvas>
+      <\/div>
+    <\/aside>
+  <\/div>
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <p style="font-weight:700; margin-bottom:8px;">Confirm delete<\/p>
+      <p class="muted" id="modalText">Are you sure?<\/p>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+        <button class="btn" id="cancelModal">Cancel<\/button>
+        <button class="btn primary" id="confirmModal">Delete<\/button>
+      <\/div>
+    <\/div>
+  <\/div>
+  <script>
+const PAGE_SIZE = 5;
+const STORAGE_KEY = 'et_pro_expenses_v2_${loggedInUser.id}';
+let expenses = []; let filtered = []; let page = 1; let currentSort = { key: null, asc: true };
+let lastDeleted = null; let categoryChart = null;
+
+function uid() { return 'id_' + Math.random().toString(36).slice(2, 9); }
+function formatCurrency(v) { if(isNaN(v)) return '₹0.00'; return '₹' + Number(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function toast(msg, ms=2500) { const el=document.createElement('div'); el.className='toast'; el.innerText=msg; document.getElementById('toasts').appendChild(el); setTimeout(() => el.remove(), ms); }
+function saveLocal() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses)); } catch(e) { console.error('Save failed', e); } }
+function loadLocal() { try { const r=localStorage.getItem(STORAGE_KEY); if(!r) return []; return JSON.parse(r); } catch(e) { return []; } }
+function escapeHtml(s='') { return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[m]); }
+
+function renderTable(list) {
+  const search = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+  let out = list.filter(e => !search || (e.name||'').toLowerCase().includes(search) || (e.category||'').toLowerCase().includes(search));
+  if (currentSort.key) { const k=currentSort.key; out.sort((a,b) => (a[k]>b[k] ? 1:-1) * (currentSort.asc?1:-1)); }
+  filtered = out;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  if (page > totalPages) page = totalPages;
+  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, (page - 1) * PAGE_SIZE + PAGE_SIZE);
+  const tbody = document.getElementById('expensesTable');
+  tbody.innerHTML = pageItems.map(exp => \`
+    <tr>
+      <td>\${escapeHtml(exp.name)}<\/td>
+      <td>\${formatCurrency(exp.amount)}<\/td>
+      <td>\${escapeHtml(exp.category)}<\/td>
+      <td>\${escapeHtml(exp.date)}<\/td>
+      <td>
+        <button class="btn ghost" onclick="openEdit('\${exp.id}')">✏<\/button>
+        <button class="btn" style="background:var(--danger);color:#fff" onclick="promptDelete('\${exp.id}')">🗑<\/button>
+      <\/td>
+    <\/tr>
+  \`).join('');
+  renderPager(totalPages);
+}
+
+function renderPager(totalPages) {
+  const pager = document.getElementById('pager'); pager.innerHTML = ''; if (totalPages <= 1) return;
+  if (page > 1) { const prev = document.createElement('button'); prev.className='page-btn'; prev.innerText='‹'; prev.onclick=()=>{page--; renderTable(expenses);}; pager.appendChild(prev); }
+  for (let i=1; i<=totalPages; i++) { const b=document.createElement('button'); b.className='page-btn'; b.style.fontWeight=(i===page?800:600); b.innerText=i; b.onclick=()=>{page=i; renderTable(expenses);}; pager.appendChild(b); }
+  if (page < totalPages) { const next = document.createElement('button'); next.className='page-btn'; next.innerText='›'; next.onclick=()=>{page++; renderTable(expenses);}; pager.appendChild(next); }
+}
+
+function updateCharts(list = expenses) {
+  const catTotals = list.reduce((acc, e) => { acc[e.category] = (acc[e.category] || 0) + Number(e.amount); return acc; }, {});
+  const catCtx = document.getElementById('categoryChart').getContext('2d');
+  if (categoryChart) categoryChart.destroy();
+  const colors = ['rgba(52,152,219,0.85)', 'rgba(46,204,113,0.85)', 'rgba(241,196,15,0.85)', 'rgba(231,76,60,0.85)', 'rgba(155,89,182,0.85)'];
+  categoryChart = new Chart(catCtx, {
+    type: 'doughnut', data: { labels: Object.keys(catTotals), datasets: [{ data: Object.values(catTotals), backgroundColor: colors, borderWidth: 0 }] },
+    options: { cutout: '60%', plugins: { legend: { display: false } } }
+  });
+}
+
+function updateTotals() {
+  const total = expenses.reduce((s, e) => s + Number(e.amount), 0);
+  document.getElementById('totalAmount').innerText = formatCurrency(total);
+}
+
+function refreshAll() { renderTable(expenses); updateCharts(); updateTotals(); }
+
+async function addExpenseFromForm(e) {
+  e.preventDefault();
+  const name = document.getElementById('name').value.trim();
+  const amount = Number(document.getElementById('amount').value);
+  const category = document.getElementById('category').value.trim() || 'Other';
+  const date = document.getElementById('date').value;
+  if (!name || !date || !amount) { toast('Please fill all fields'); return; }
+  const expense = { id: uid(), name, amount, category, date, createdAt: new Date().toISOString() };
+  expenses.unshift(expense); saveLocal(); toast('Added'); refreshAll();
+  e.target.reset(); document.getElementById('date').value = new Date().toISOString().slice(0,10);
+}
+
+function promptDelete(id) {
+  if (confirm('Are you sure you want to delete this expense?')) { doDelete(id); }
+}
+
+async function doDelete(id) {
+  const idx = expenses.findIndex(x => x.id === id); if (idx === -1) return;
+  lastDeleted = expenses[idx]; expenses.splice(idx, 1);
+  saveLocal(); refreshAll(); toast('Expense deleted.');
+}
+
+function openEdit(id) {
+  const e = expenses.find(x => x.id === id); if (!e) return;
+  document.getElementById('name').value = e.name;
+  document.getElementById('amount').value = e.amount;
+  document.getElementById('category').value = e.category;
+  document.getElementById('date').value = e.date;
+  doDelete(id); // remove to re-add on submit
+}
+
+// Event Listeners
+document.getElementById('expenseForm').addEventListener('submit', addExpenseFromForm);
+document.querySelectorAll('th[data-sort]').forEach(th => th.addEventListener('click', () => { const k=th.dataset.sort; currentSort.asc=currentSort.key===k?!currentSort.asc:true; currentSort.key=k; renderTable(expenses); }));
+
+// New submit for approval logic
+document.getElementById('submitForApprovalBtn').addEventListener('click', () => {
+    if (expenses.length === 0) {
+        toast('No expenses to submit.');
+        return;
+    }
+    if (window.confirm(\Are you sure you want to submit \${expenses.length} expense(s) for approval? This will clear them from your local dashboard.\)) {
+        window.parent.postMessage({ type: 'SUBMIT_EXPENSES', payload: expenses }, '*');
+        expenses = []; saveLocal(); refreshAll();
+        toast('Expenses submitted for approval!');
+    }
+});
+
+(function init() {
+  expenses = loadLocal();
+  document.getElementById('date').value = new Date().toISOString().slice(0,10);
+  refreshAll();
+})();
+
+window.promptDelete = promptDelete; window.openEdit = openEdit;
+  <\/script>
+<\/body>
+<\/html>`;
+    return <iframe srcDoc={dashboardHtml} style={{width:"100%",height:"calc(100vh - 80px)",border:"none",borderRadius:"12px"}} title="Advanced Employee Dashboard" />;
+};
+
+// --- COMPONENT 5: MANAGER & ADMIN DASHBOARD ---
+function ManagerAdminDashboard({ loggedInUser, allUsers, setUsers, expenses, setExpenses }) {
+    const chartRef = useRef(null);
+    const [monthlyBudget, setMonthlyBudget] = useState(50000);
+    const [budgetInput, setBudgetInput] = useState(50000);
+
+    const isManager = loggedInUser.role === 'MANAGER';
+    const isAdmin = loggedInUser.role === 'ADMIN';
+
+    const myTeamMemberIds = isManager ? allUsers.filter(u => u.managerId === loggedInUser.id).map(u => u.id) : [];
+    
+    // --- CORRECTED LOGIC: Admins see all expenses, Managers see only their team's ---
+    const relevantExpenses = isManager ? expenses.filter(e => myTeamMemberIds.includes(e.employeeId)) : expenses;
+    
+    // --- Separate queues for each role ---
+    const managerApprovalQueue = relevantExpenses.filter(e => e.status === 'PENDING');
+    const adminApprovalQueue = expenses.filter(e => e.status === 'MANAGER_APPROVED'); // Admin sees ALL manager-approved requests
+    
+    const expenseHistory = relevantExpenses.filter(e => ['APPROVED', 'REJECTED', 'MANAGER_APPROVED'].includes(e.status));
+
+    const approvedThisMonth = relevantExpenses.filter(e => {
+        const today = new Date();
+        const expenseDate = new Date(e.date);
+        return e.status === 'APPROVED' && expenseDate.getMonth() === today.getMonth() && expenseDate.getFullYear() === today.getFullYear();
+    });
+
+    // --- CORRECTED LOGIC: Calculate pending value based on what the current user sees ---
+    const pendingValue = (isManager ? managerApprovalQueue : allUsers.length > 0 ? expenses.filter(e => e.status === 'PENDING') : []).reduce((sum, e) => sum + e.amount, 0);
+    const approvedValue = approvedThisMonth.reduce((sum, e) => sum + e.amount, 0);
+
+    const formatCurrency = val => ₹${Number(val).toLocaleString('en-IN')};
+    
+    const handleDeleteUser = (userIdToDelete) => {
+        if (userIdToDelete === loggedInUser.id) {
+            alert("You cannot delete yourself.");
+            return;
+        }
+        if (window.confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
+            setUsers(currentUsers => currentUsers.filter(user => user.id !== userIdToDelete));
+        }
+    };
+
+    useEffect(() => {
+        if (!chartRef.current) return;
+        const ctx = chartRef.current.getContext('2d');
+        Chart.defaults.color = '#9CA3AF';
+        Chart.defaults.borderColor = '#374151';
+        const dataForChart = isManager
+            ? myTeamMemberIds.map(id => ({ name: allUsers.find(u=>u.id===id)?.name || '?', total: expenses.filter(e=>e.employeeId === id && e.status==='APPROVED').reduce((s,e)=>s+e.amount,0) }))
+            : allUsers.filter(u=>u.role==='MANAGER').map(mgr => ({ name: mgr.name, total: expenses.filter(e=>allUsers.find(u=>u.id===e.employeeId)?.managerId === mgr.id && e.status==='APPROVED').reduce((s,e)=>s+e.amount,0) }));
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: dataForChart.map(d => d.name),
+                datasets: [{ label: 'Total Approved Spend', data: dataForChart.map(d => d.total), backgroundColor: 'rgba(139, 92, 246, 0.6)' }]
+            },
+            options: { scales: { y: { beginAtZero: true, grid: { color: '#374151' } }, x: { grid: { display: false } } } }
+        });
+        return () => chart.destroy();
+    }, [expenses, allUsers, isManager, myTeamMemberIds]);
+
+    function handleManagerApproval(expenseId, isApproved) {
+        const newStatus = isApproved ? "MANAGER_APPROVED" : "REJECTED";
+        setExpenses(exps => exps.map(exp => exp.id === expenseId ? { ...exp, status: newStatus } : exp));
+    }
+
+    function handleAdminApproval(expenseId, isApproved) {
+        const newStatus = isApproved ? "APPROVED" : "REJECTED";
+        setExpenses(exps => exps.map(exp => exp.id === expenseId ? { ...exp, status: newStatus } : exp));
+    }
+    
+    const handleAddUser = (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const newUser = {
+            id: Date.now(), name: formData.get('name'), email: formData.get('email'), password: "password",
+            role: formData.get('role'), managerId: formData.get('role') === 'EMPLOYEE' && isManager ? loggedInUser.id : null
+        };
+        setUsers(currentUsers => [...currentUsers, newUser]);
+        e.target.reset();
+    };
+
+    const statusColors = {
+        APPROVED: { bg: 'rgba(22, 163, 74, 0.2)', border: '#16a34a', text: '#4ade80' },
+        REJECTED: { bg: 'rgba(220, 38, 38, 0.2)', border: '#dc2626', text: '#f87171' },
+        MANAGER_APPROVED: { bg: 'rgba(139, 92, 246, 0.2)', border: '#8b5cf6', text: '#a78bfa' }
+    };
+
+    return (
+        <div className="dashboard">
+            <div className="summary-cards" style={{ gridColumn: '1 / -1' }}>
+                <div className="summary-card"><div className="value">{formatCurrency(pendingValue)}</div><div className="label">Pending Manager Approval</div></div>
+                <div className="summary-card"><div className="value">{formatCurrency(approvedValue)}</div><div className="label">Approved This Month</div></div>
+                <div className="summary-card"><div className="value">{isManager ? myTeamMemberIds.length : allUsers.length}</div><div className="label">{isManager ? 'Direct Reports' : 'Total Users'}</div></div>
+            </div>
+            <div className="card">
+                <h2>{isManager ? 'Team' : 'Company'} Budget</h2>
+                <div style={{display:'flex', gap:'1rem', alignItems:'center', marginBottom:'1rem'}}>
+                    <input type="number" value={budgetInput} onChange={e => setBudgetInput(e.target.value)} style={{flex:1}} />
+                    <button className="approve-btn" onClick={() => setMonthlyBudget(Number(budgetInput))}>Set</button>
+                </div>
+            </div>
+            <div className="card">
+                <h2>{isManager ? 'Team Spending' : 'Manager Spending'}</h2>
+                <canvas ref={chartRef}></canvas>
+            </div>
+            
+            {/* --- MANAGER'S VIEW OF PENDING ITEMS --- */}
+            {isManager && (
+                 <div className="card" style={{ gridColumn: '1 / -1' }}>
+                    <h2>Manager Approval Queue</h2>
+                    {managerApprovalQueue.length > 0 ? (
+                        <ul>{managerApprovalQueue.map(exp => (
+                            <li key={exp.id}>
+                                <span>{(allUsers.find(u=>u.id===exp.employeeId) || {}).name}: {exp.name} for {formatCurrency(exp.amount)}</span>
+                                <div>
+                                    <button className="approve-btn" onClick={() => handleManagerApproval(exp.id, true)}>Approve</button>
+                                    <button className="reject-btn" onClick={() => handleManagerApproval(exp.id, false)}>Reject</button>
+                                </div>
+                            </li>
+                        ))}</ul>
+                    ) : <p>No new employee expenses to approve.</p>}
+                </div>
+            )}
+
+            {/* --- ADMIN'S VIEW OF BOTH QUEUES --- */}
+            {isAdmin && (
+                <>
+                    <div className="card" style={{ gridColumn: '1 / -1' }}>
+                        <h2>Manager-Level Queue (Admin Override)</h2>
+                        {managerApprovalQueue.length > 0 ? (
+                            <ul>{managerApprovalQueue.map(exp => (
+                                <li key={exp.id}>
+                                    <span>{(allUsers.find(u => u.id === exp.employeeId) || {}).name}: {exp.name} for {formatCurrency(exp.amount)}</span>
+                                    <div>
+                                        <button className="approve-btn" onClick={() => handleManagerApproval(exp.id, true)}>Approve for Manager</button>
+                                        <button className="reject-btn" onClick={() => handleManagerApproval(exp.id, false)}>Reject</button>
+                                    </div>
+                                </li>
+                            ))}</ul>
+                        ) : <p>No expenses are pending manager approval.</p>}
+                    </div>
+
+                    <div className="card" style={{ gridColumn: '1 / -1' }}>
+                        <h2>Final Admin Approval Queue</h2>
+                        {adminApprovalQueue.length > 0 ? (
+                            <ul>{adminApprovalQueue.map(exp => (
+                                <li key={exp.id}>
+                                    <span>{(allUsers.find(u => u.id === exp.employeeId) || {}).name}: {exp.name} for {formatCurrency(exp.amount)}</span>
+                                    <div>
+                                        <button className="approve-btn" onClick={() => handleAdminApproval(exp.id, true)}>Final Approve</button>
+                                        <button className="reject-btn" onClick={() => handleAdminApproval(exp.id, false)}>Reject</button>
+                                    </div>
+                                </li>
+                            ))}</ul>
+                        ) : <p>No expenses are pending final admin approval.</p>}
+                    </div>
+                </>
+            )}
+
+
+            {/* --- EXPENSE HISTORY CARD (Visible to both) --- */}
+            <div className="card" style={{ gridColumn: '1 / -1' }}>
+                <h2>Expense History</h2>
+                {expenseHistory.length > 0 ? (
+                    <ul style={{maxHeight: '300px', overflowY: 'auto'}}>{expenseHistory.map(exp => {
+                        const colors = statusColors[exp.status] || { bg: '#374151', border: '#4B5563', text: '#9CA3AF' };
+                        return (
+                            <li key={exp.id} style={{ backgroundColor: colors.bg, borderColor: colors.border }}>
+                                <span>{(allUsers.find(u=>u.id===exp.employeeId) || {}).name}: {exp.name} for {formatCurrency(exp.amount)}</span>
+                                <strong style={{color: colors.text}}>{exp.status.replace('_', ' ')}</strong>
+                            </li>
+                        );
+                    })}</ul>
+                ) : <p>No expense history found.</p>}
+            </div>
+
+             {isAdmin && (
+                  <div className="card" style={{ gridColumn: '1 / -1' }}>
+                      <h2>User Management</h2>
+                      <ul style={{maxHeight: '200px', overflowY: 'auto', marginBottom: '1rem'}}>{allUsers.map(user => (
+                          <li key={user.id}>
+                              <span>{user.name} ({user.role}) - {user.email}</span>
+                              <button className="delete-btn" onClick={() => handleDeleteUser(user.id)}>Delete</button>
+                          </li>
+                      ))}</ul>
+                      <form onSubmit={handleAddUser}>
+                          <h3>Add New User</h3>
+                          <input name="name" placeholder="Full Name" required />
+                          <input name="email" placeholder="Email" type="email" required />
+                          <select name="role" required>
+                              <option value="EMPLOYEE">Employee</option><option value="MANAGER">Manager</option><option value="ADMIN">Admin</option>
+                          </select>
+                          <button type="submit" className="approve-btn" style={{width: '100%', marginLeft: 0}}>Add User</button>
+                      </form>
+                 </div>
+            )}
+        </div>
+    );
+}
+
+// --- DASHBOARD WRAPPER ---
+function Dashboard({ loggedInUser, onLogout, allUsers, setUsers, expenses, setExpenses, error }) {
+    return (
+        <div className="dashboard-wrapper">
+            <div style={{ textAlign: "center", marginBottom: "24px" }}>
+                <h1>LedgerCore</h1>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 10px'}}>
+                    <p>Welcome, <strong>{loggedInUser.name}</strong> ({loggedInUser.role})</p>
+                    <button onClick={onLogout} className="logout-btn" style={{margin: 0}}>Logout</button>
+                </div>
+            </div>
+            {error && <div className="message error">{error}</div>}
+            {loggedInUser.role === 'EMPLOYEE' ? (
+                <EmployeeDashboardPro loggedInUser={loggedInUser} />
+            ) : (
+                <ManagerAdminDashboard 
+                    loggedInUser={loggedInUser} 
+                    allUsers={allUsers} 
+                    setUsers={setUsers} 
+                    expenses={expenses} 
+                    setExpenses={setExpenses} 
+                />
+            )}
+        </div>
+    );
+}
+
+// --- MAIN APP CONTROLLER ---
+function App() {
+  const [view, setView] = useState('landing');
+  const [loggedInUser, setLoggedInUser] = useState(null);
+  const [error, setError] = useState('');
+  
+  const [users, setUsers] = useState([]);
+  const [expenses, setExpenses] = useState([]);
+
+  useEffect(() => {
+    if (loggedInUser && (loggedInUser.role === "MANAGER" || loggedInUser.role === "ADMIN")) {
+        setUsers(mockDatabase.users);
+        setExpenses(mockDatabase.expenses);
+    }
+  }, [loggedInUser]);
+
+  const handleSignUp = (newUser) => {
+    if (newUser.password !== newUser.confirmPassword) { setError("Passwords do not match."); return; }
+    if (mockDatabase.users.find(u => u.email === newUser.email)) { setError("An account with this email already exists."); return; }
+    setError('');
+    const userToCreate = { 
+        id: Date.now(), name: newUser.name, email: newUser.email, password: newUser.password, role: newUser.role, 
+        managerId: newUser.role === 'EMPLOYEE' ? 2 : (newUser.role === 'MANAGER' ? 1 : null)
+    };
+    mockDatabase.users.push(userToCreate);
+    if (loggedInUser && loggedInUser.role === 'ADMIN') { setUsers([...mockDatabase.users]); }
+    setView('login');
+    setError("Account created successfully! Please log in."); 
+  };
+
+  const handleLogin = (email, password) => {
+    setError('');
+    const foundUser = mockDatabase.users.find(user => user.email === email && user.password === password);
+    if (foundUser) {
+        setLoggedInUser(foundUser);
+        setView('dashboard');
+    } else {
+        setError("Invalid email or password.");
+    }
+  };
+ 
+  const handleLogout = () => {
+      setLoggedInUser(null);
+      setUsers([]);
+      setExpenses([]);
+      setView('landing');
+  };
+ 
+  useEffect(() => {
+    const handleMessage = (event) => {
+        if (event.data && event.data.type === 'SUBMIT_EXPENSES' && loggedInUser) {
+            const expensesFromEmployee = event.data.payload;
+            const newExpenses = expensesFromEmployee.map((exp, index) => ({
+                ...exp, id: Date.now() + index, employeeId: loggedInUser.id, status: 'PENDING'
+            }));
+            
+            setExpenses(prevExpenses => [...prevExpenses, ...newExpenses]);
+            mockDatabase.expenses.push(...newExpenses);
+
+            alert(${newExpenses.length} expense(s) submitted successfully! A manager can now see them.);
+        }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [loggedInUser]); // Corrected dependency array
+ 
+  const renderView = () => {
+      switch(view) {
+          case 'landing': return <LandingPage switchToSignUp={() => setView('signup')} switchToLogin={() => setView('login')} />;
+          case 'dashboard': return <Dashboard 
+                                      loggedInUser={loggedInUser} 
+                                      onLogout={handleLogout}
+                                      allUsers={users}
+                                      setUsers={setUsers}
+                                      expenses={expenses}
+                                      setExpenses={setExpenses}
+                                      error={error} 
+                                    />;
+          case 'login': return <LoginPage onLogin={handleLogin} switchToSignUp={() => { setView('signup'); setError(''); }} error={error} />;
+          case 'signup': default: return <SignUpPage onSignUp={handleSignUp} switchToLogin={() => { setView('login'); setError(''); }} error={error} />;
+      }
+  };
+
+  return (
+    <div key={view} className="view-container">
+        {renderView()}
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
