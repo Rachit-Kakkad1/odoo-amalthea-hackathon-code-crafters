@@ -145,17 +145,50 @@
     border: 1px solid #555;
     background-color: #222;
     color: #eee;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
+  
+  /* --- MODIFICATION START --- */
+
+  /* Better focus state for all inputs */
+  input:focus, select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+  }
+
+  /* Improved Dropdown Styling */
+  select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23cccccc%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E');
+    background-repeat: no-repeat;
+    background-position: right 14px top 50%;
+    background-size: 12px;
+    padding-right: 40px;
+    cursor: pointer;
+  }
+
+  /* Improved Submit Button Styling */
   button.submit-btn {
-    background-color: #007bff;
+    background: linear-gradient(45deg, #007bff, #0056b3);
     color: white;
     font-size: 1.1em;
     font-weight: 700;
     cursor: pointer;
+    border: none;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    transition: all 0.2s ease-in-out;
   }
   button.submit-btn:hover {
-    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
   }
+
+  /* --- MODIFICATION END --- */
+
   .message {
     margin-top: 16px;
     text-align: center;
@@ -174,7 +207,7 @@
   }
   label {
     font-weight: 600;
-    margin-bottom: 6px;
+    margin-bottom: -10px; /* Adjusted for better spacing */
   }
   .comment-input {
     resize: vertical;
@@ -226,7 +259,7 @@ function App() {
   // Filtering expenses by logged in user
   const myExpenses = expenses.filter(e => e.employeeId === currentUser.id);
 
-  // Filtering pending expenses *awaiting approval* for manager or admin 
+  // Filtering pending expenses awaiting approval for manager or admin 
   // (approval must be in correct sequence)
   let approvalQueue = [];
   if(currentUser.role === "MANAGER" || currentUser.role ==="ADMIN") {
@@ -235,7 +268,7 @@ function App() {
       // find the current step in approval sequence
       const step = APPROVAL_SEQUENCE[exp.currentApprovalStep];
       if(!step) return false;
-      // manager sees expenses of their own employees *if* they're the current approver
+      // manager sees expenses of their own employees if they're the current approver
       if(currentUser.role === "MANAGER") {
         return step.isManagerApprover === true && getUserById(exp.employeeId)?.managerId === currentUser.id;
       }
@@ -298,13 +331,13 @@ function App() {
   const Comments = ({comments}) => (
     <div style={{fontSize:"0.9em", marginTop:"6px", color:"#ccc"}}>
       <strong>Comments:</strong>
-      {comments.length === 0 && <div>None yet.</div>}
+      {comments.length === 0 && <div style={{display: 'inline', marginLeft: '4px'}}>None yet.</div>}
       <ul>
         {comments.map((c,i) => (
-          <li key={i}>
-            <b>{c.by}</b> &middot; {new Date(c.date).toLocaleString()} &middot; <em>{c.approved ? "Approved" : "Rejected"}</em>
-            <br />
-            {c.text}
+          <li key={i} style={{padding: '8px', background: '#444', fontSize:'0.9em'}}>
+            <div><b>{c.by}</b> &middot; <span style={{color: c.approved ? '#90ee90' : '#ff7f7f'}}>{c.approved ? "Approved" : "Rejected"}</span></div>
+            <div>{c.text}</div>
+            <div style={{fontSize:'0.8em', color:'#aaa', width: '100%', textAlign:'right'}}>{new Date(c.date).toLocaleString()}</div>
           </li>
         ))}
       </ul>
@@ -331,7 +364,7 @@ function App() {
 
   return (
     <div>
-      <div className="header">
+      <div className="header" style={{textAlign:"center", marginBottom:"24px"}}>
         <h1>ExpensoMan</h1>
         <p>A Simple Expense Management Dashboard</p>
       </div>
@@ -365,22 +398,27 @@ function App() {
                     <br />
                     Date: {exp.date} &middot; Amount: {exp.amount} {exp.currency}
                     <br />
-                    {APPROVAL_SEQUENCE.map((step,i) => (
-                      <ApprovalStep 
-                        key={i} 
-                        step={step} 
-                        isCurrent={i === exp.currentApprovalStep} 
-                        isDone={i < exp.currentApprovalStep}
-                      />
-                    ))}
+                    <div style={{marginTop: '8px'}}>
+                      {APPROVAL_SEQUENCE.map((step,i) => (
+                        <ApprovalStep 
+                          key={i} 
+                          step={step} 
+                          isCurrent={i === exp.currentApprovalStep} 
+                          isDone={i < exp.currentApprovalStep}
+                        />
+                      ))}
+                    </div>
                     <Comments comments={exp.comments} />
                   </div>
                   <div className="expense-details">
                     <textarea 
+                      className="comment-input"
                       placeholder="Add comment (optional)" 
                       rows="2"
                       onChange={(e) => exp.tempComment = e.target.value}
-                      style={{width:"100%", marginBottom:"8px"}}
+                      style={{width:"100%", marginBottom:"8px",
+                        padding: "8px", borderRadius: "6px", border: "1px solid #555",
+                        backgroundColor: "#222", color:"#eee"}}
                     />
                     <button 
                       className="approve-btn" 
@@ -439,7 +477,6 @@ function App() {
                   <option value="INR">INR (₹)</option>
                   <option value="USD">USD ($)</option>
                   <option value="EUR">EUR (€)</option>
-                  <option value="GBP">GBP (£)</option>
                 </select>
 
                 <label>Category *</label>
@@ -459,7 +496,7 @@ function App() {
 
         {/* Admin panel for user management */}
         {currentUser.role === "ADMIN" && (
-          <div className="card" style={{marginTop:"24px"}}>
+          <div className="card" style={{gridColumn: '1 / -1'}}>
             <h2>Admin Panel — Manage Users</h2>
             <form onSubmit={e => { e.preventDefault(); addUser(); }}>
               <label>Name *</label>

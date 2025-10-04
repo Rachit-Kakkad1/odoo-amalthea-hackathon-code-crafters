@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Expense Tracker — Pro Futuristic (1000+ lines)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+/* ==========================================================================
+   Futuristic Expense Tracker — Styles (big, commented, modular)
+   ========================================================================== */
+
+/* --------------- CORE RESET --------------- */
+:root {
+  --bg-0: #0b1020; /* dark base */
+  --bg-1: linear-gradient(135deg,#0b1220,#08101a); /* dark gradient */
+  --card-bg: rgba(255,255,255,0.03);
+  --glass-bg: rgba(255,255,255,0.04);
+  --muted: rgba(255,255,255,0.6);
+  --accent: #2ecc71; /* emerald */
+  --accent-2: #4facfe;
+  --danger: #ff6b6b;
+  --success: #2ecc71;
+  --shadow: 0 12px 40px rgba(2,6,23,0.55);
+  --max-width: 1200px;
+  --radius: 14px;
+  --glass-border: rgba(255,255,255,0.04);
+  --glass-border-dark: rgba(255,255,255,0.02);
+  --glass-blur: 10px;
+}
+
+/* Basic reset */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html,body { height: 100%; }
+body {
+  font-family: "Poppins", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: var(--bg-1);
+  color: #e8eef6;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  padding: 28px;
+  transition: background 300ms ease, color 300ms ease;
+}
+
+/* ---------------- LAYOUT ---------------- */
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 22px;
+  align-items: start;
+  position: relative;
+}
+
+/* Mobile stack */
+@media (max-width: 980px) {
+  .container { grid-template-columns: 1fr; padding-bottom: 80px; }
+}
+
+/* Header */
+.header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.brand {
+  display:flex; gap:12px; align-items:center;
+}
+.brand .logo {
+  width: 48px; height:48px; border-radius:10px;
+  background: linear-gradient(135deg,#1b3b5f,#3a6ea5);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45), 0 0 30px rgba(74,144,226,0.06) inset;
+  font-weight:700; color:#fff;
+}
+.brand h1 {
+  font-size: 1.2rem; letter-spacing: 0.4px; color: #f5f9ff;
+  font-weight:700;
+}
+.header .controls { display:flex; gap:10px; align-items:center; }
+
+/* --------------- BUTTONS --------------- */
+.btn {
+  background: rgba(255,255,255,0.04);
+  color: #fff; border: none;
+  padding: 8px 12px; border-radius: 10px;
+  cursor:pointer; font-weight:700;
+  transition: transform .12s ease, background .12s ease, box-shadow .12s ease;
+  box-shadow: 0 6px 18px rgba(2,6,23,0.45);
+}
+.btn:active { transform: translateY(1px); }
+.btn:hover { transform: translateY(-2px); }
+.btn.primary {
+  background: linear-gradient(90deg,var(--accent), var(--accent-2));
+  color: #042; box-shadow: 0 10px 30px rgba(46,204,113,0.08);
+}
+.btn.ghost {
+  background: transparent; border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* toast */
+.toast-wrap {
+  position: fixed; right: 18px; bottom: 18px; z-index: 1200; display:flex; flex-direction:column; gap:8px;
+}
+.toast {
+  background: rgba(0,0,0,0.6);
+  color: #fff; padding:10px 14px; border-radius:10px;
+  font-weight:600; min-width:180px; box-shadow: 0 8px 36px rgba(0,0,0,0.5);
+}
+
+/* --------------- CARDS --------------- */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  transition: transform .14s ease, box-shadow .14s ease;
+}
+.card:hover { transform: translateY(-6px); box-shadow: 0 18px 60px rgba(2,6,23,0.6); }
+
+/* input controls inside card */
+.form-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.input {
+  padding: 14px 16px; /* MODIFIED: Increased padding for more space */
+  border-radius:10px; min-width:150px;
+  border:1px solid rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.03);
+  color: #eaf4ff; font-weight:500;
+}
+.input:focus { outline: none; box-shadow: 0 6px 24px rgba(74,144,226,0.06); border-color: rgba(74,144,226,0.12); }
+
+/* labels */
+.label { font-size: 13px; color: var(--muted); margin-bottom:6px; display:block; }
+
+/* table styles */
+.table-wrap { overflow:auto; border-radius:10px; margin-top:10px; }
+table {
+  width:100%; border-collapse:collapse; min-width:720px;
+  color:#e9f6ff;
+}
+thead th {
+  padding:12px 14px; text-align:left; position: sticky; top: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  font-weight:700; font-size:13px; color:#cfe9ff;
+}
+tbody td { padding:12px 14px; border-top: 1px dashed rgba(255,255,255,0.03); font-size:14px; }
+tbody tr:nth-child(even) { background: rgba(255,255,255,0.012); }
+tbody tr:hover { background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.03)); }
+
+/* badges */
+.badge {
+  padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px; color:#042;
+}
+.badge.food { background:#ffd3d3; }
+.badge.travel { background:#cff3e1; }
+.badge.shopping { background:#dbe9ff; }
+.badge.bills { background:#ffe7c9; }
+.badge.other { background:#e6d9ff; }
+
+/* sidebar layout */
+.sidebar { display:flex; flex-direction:column; gap:14px; }
+.total-box { text-align:center; padding:18px; border-radius:12px; }
+.total-amount { font-size:22px; font-weight:800; color: var(--accent-2); }
+
+/* budget progress */
+.progress { width:100%; height:12px; background: rgba(255,255,255,0.03); border-radius:999px; overflow:hidden; }
+.progress > i { display:block; height:100%; width:0%; background: linear-gradient(90deg, var(--accent), #a0f0e0); transition: width .6s ease; }
+
+/* charts */
+.charts { display:flex; flex-direction:column; gap:14px; }
+.charts canvas { background: transparent; border-radius:8px; width:100% !important; height:230px !important; }
+
+/* pager */
+.pager { display:flex; gap:8px; align-items:center; justify-content:center; margin-top:12px; }
+.page-btn { padding:8px 10px; border-radius:8px; border: none; background: rgba(255,255,255,0.03); color: #fff; cursor:pointer; }
+
+/* modal */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: none; align-items:center; justify-content:center; z-index: 1400; }
+.modal { background: linear-gradient(180deg,#051426,#09203f); padding: 18px; border-radius:12px; min-width:320px; max-width:600px; border:1px solid rgba(255,255,255,0.04); box-shadow: 0 18px 60px rgba(0,0,0,0.6); }
+
+/* small helper */
+.muted { color: rgba(255,255,255,0.55); font-size:13px; }
+.kv { display:flex; justify-content:space-between; margin:6px 0; }
+
+/* responsive tweaks */
+@media (max-width: 760px) {
+  .table-wrap table { min-width: 600px; font-size: 13px; }
+  .brand h1 { font-size: 1.0rem; }
+}
+
+/* EOF Styles big block */
+  </style>
+</head>
+<body>
+  <div class="toast-wrap" id="toasts"></div>
+
+  <div class="container">
+
+    <div class="header">
+      <div class="brand">
+        <div class="logo">ET</div>
+        <div>
+          <h1>Expense Tracker — Pro</h1>
+          <div class="muted" style="font-size:12px">Futuristic dashboard • Offline-capable • Export / Import</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="btn ghost" id="importBtn">📥 Import CSV</button>
+        <input type="file" id="csvFile" class="file-input" accept=".csv" style="display:none" />
+        <button class="btn ghost" id="exportCSVBtn">📤 Export CSV</button>
+        <button class="btn ghost" id="exportJSONBtn">📤 Export JSON</button>
+        <button class="btn ghost" id="exportPDFBtn">🖨 Export PDF</button>
+        <button class="btn ghost" id="backupBtn">💾 Backup</button>
+        <button class="btn ghost" id="restoreBtn">♻️ Restore</button>
+        <button class="btn" id="themeToggle">🌗 Theme</button>
+      </div>
+    </div>
+
+    <main class="card" style="min-height:100px;">
+      <section>
+        <form id="expenseForm" aria-label="Add expense form">
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <div style="flex:1; min-width:160px;">
+              <label class="label">Name</label>
+              <input id="name" class="input" placeholder="e.g., Coffee at office" required />
+            </div>
+            <div style="width:140px;">
+              <label class="label">Amount</label>
+              <input id="amount" class="input" type="number" step="0.01" placeholder="₹" required />
+            </div>
+            <div style="width:170px;">
+              <label class="label">Category</label>
+              <input id="category" class="input" placeholder="Food, Travel, Bills..." required />
+            </div>
+            <div style="width:170px;">
+              <label class="label">Date</label>
+              <input id="date" class="input" type="date" required />
+            </div>
+
+            <div style="display:flex; gap:8px; align-items:center;">
+              <button class="btn primary" id="addBtn" type="submit">➕ Add</button>
+              <button class="btn" id="clearFormBtn" type="button">Clear</button>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:12px; align-items:center; margin-top:12px; flex-wrap:wrap;">
+            <div>
+              <label class="label">Quick categories</label>
+              <div style="display:flex; gap:8px;">
+                <button class="btn ghost quick-cat">Food</button>
+                <button class="btn ghost quick-cat">Travel</button>
+                <button class="btn ghost quick-cat">Shopping</button>
+                <button class="btn ghost quick-cat">Bills</button>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:8px; align-items:center;">
+              <label style="font-size:13px; color:var(--muted)"><input type="checkbox" id="recurring"> Recurring</label>
+            </div>
+
+            <div style="margin-left:auto">
+              <div class="muted">Autosave: <span id="autosaveStatus">ON</span></div>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <section style="margin-top:14px;">
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <div style="flex:1; min-width:220px;">
+            <label class="label">Search</label>
+            <input id="searchInput" class="input" placeholder="Search name or category..." />
+          </div>
+
+          <div>
+            <label class="label">Category</label>
+            <select id="filterCategory" class="input">
+              <option value="">All categories</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="label">From</label>
+            <input id="filterFrom" class="input" type="date" />
+          </div>
+          <div>
+            <label class="label">To</label>
+            <input id="filterTo" class="input" type="date" />
+          </div>
+
+          <div style="margin-left:auto; display:flex; gap:8px;">
+            <button class="btn" id="applyFilters">Apply</button>
+            <button class="btn" id="resetFilters">Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <section style="margin-top:18px;">
+        <div class="table-wrap">
+          <table role="table" aria-live="polite">
+            <thead>
+              <tr>
+                <th data-sort="name">Name ⬍</th>
+                <th data-sort="amount">Amount ⬍</th>
+                <th data-sort="category">Category ⬍</th>
+                <th data-sort="date">Date ⬍</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="expensesTable"></tbody>
+          </table>
+        </div>
+
+        <div class="pager" id="pager"></div>
+      </section>
+    </main>
+
+    <aside class="sidebar">
+      <div class="card total-box">
+        <div class="small">Total Spent (All time)</div>
+        <div class="total-amount" id="totalAmount">₹0</div>
+        <div class="muted">Auto-updates & persistent</div>
+      </div>
+
+      <div class="card budget-wrap">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong>Monthly Budget</strong>
+          <div class="small muted" id="budgetMonthLabel"></div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <input id="budgetInput" class="input" placeholder="₹ Monthly budget" type="number" style="flex:1" />
+          <button id="setBudgetBtn" class="btn primary">Set</button>
+        </div>
+
+        <div style="margin-top:12px;">
+          <div class="progress" aria-hidden="true"><i id="budgetProgressBar" style="display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--accent),#a8e063);"></i></div>
+          <div style="display:flex; justify-content:space-between; margin-top:8px;">
+            <div class="small">Spent: <strong id="budgetSpent">₹0</strong></div>
+            <div class="small">Budget: <strong id="budgetValue">₹0</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card charts">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong>Expense Insights</strong>
+          <div class="small muted">Auto</div>
+        </div>
+
+        <canvas id="categoryChart"></canvas>
+        <canvas id="monthlyChart"></canvas>
+        <canvas id="trendChart"></canvas>
+      </div>
+    </aside>
+
+  </div> <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <p style="font-weight:700; margin-bottom:8px;">Confirm delete</p>
+      <p class="muted" id="modalText">Are you sure you want to delete this expense?</p>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+        <button class="btn" id="cancelModal">Cancel</button>
+        <button class="btn primary" id="confirmModal">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pdfCapture" style="position:fixed; left:-9999px; top:-9999px; width:800px;"></div>
+
+  <script>
+/* ==========================================================================
+   Expense Tracker — Full JS (very large, modular, feature rich)
+   ========================================================================== */
+
+/* ---------------- CONFIGURATION ---------------- */
+const API_URL = "http://127.0.0.1:5000"; // optional, used if your backend exists
+const PAGE_SIZE = 8; // rows per page
+const STORAGE_KEY = 'et_pro_expenses_v1';
+const BACKUP_KEY = 'et_pro_backup_v1';
+const THEME_KEY = 'et_pro_theme_v1';
+const BUDGET_KEY = 'et_pro_budget_v1';
+
+/* ---------------- STATE ---------------- */
+let expenses = []; // main array of expense objects { id, name, amount, category, date, recurring, createdAt }
+let filtered = [];
+let page = 1;
+let currentSort = { key: null, asc: true };
+let lastDeleted = null; // undo support
+let categoryChart = null, monthlyChart = null, trendChart = null;
+
+/* ---------------- UTILITIES ---------------- */
+
+/**
+ * Generate a short unique id (client-side)
+ */
+function uid() {
+  return 'id_' + Math.random().toString(36).slice(2, 9);
+}
+
+/**
+ * Format currency (locale aware)
+ */
+function formatCurrency(v) {
+  if (v === null || v === undefined || isNaN(v)) return '₹0.00';
+  return '₹' + Number(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+/**
+ * Simple toast
+ */
+function toast(msg, ms = 2500) {
+  const wrap = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.innerText = msg;
+  wrap.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.addEventListener('transitionend', () => el.remove());
+  }, ms - 400);
+  setTimeout(() => el.remove(), ms + 20);
+}
+
+/**
+ * Save to local storage
+ */
+function saveLocal() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+  } catch (e) {
+    console.error('Save failed', e);
+  }
+}
+
+/**
+ * Load from local storage
+ */
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    // sanitize
+    return parsed.map(p => ({
+      id: p.id || uid(),
+      name: p.name || 'Unknown',
+      amount: Number(p.amount || 0),
+      category: p.category || 'Other',
+      date: p.date || new Date().toISOString().slice(0,10),
+      recurring: !!p.recurring,
+      createdAt: p.createdAt || new Date().toISOString()
+    }));
+  } catch (e) {
+    console.error('Load failed', e);
+    return [];
+  }
+}
+
+/**
+ * Backup to separate key
+ */
+function backupLocal() {
+  try {
+    localStorage.setItem(BACKUP_KEY, JSON.stringify(expenses));
+    toast('Backup saved locally');
+  } catch(e) { toast('Backup failed'); }
+}
+
+/**
+ * Restore from backup
+ */
+function restoreLocal() {
+  try {
+    const b = localStorage.getItem(BACKUP_KEY);
+    if (!b) { toast('No backup found'); return; }
+    const parsed = JSON.parse(b);
+    // merge
+    for (const e of parsed) {
+      if (!expenses.find(x => x.id === e.id)) expenses.push(e);
+    }
+    saveLocal();
+    toast('Restored from backup');
+    refreshAll();
+  } catch(e) { toast('Restore failed'); }
+}
+
+/* ---------------- API FALLBACKS ---------------- */
+
+/**
+ * Try to fetch from backend. If fails, fall back to local
+ */
+async function fetchExpenses() {
+  // if backend exists, attempt fetch
+  try {
+    const res = await fetch(`${API_URL}/expenses`);
+    if (!res.ok) throw new Error('Bad response');
+    const data = await res.json();
+    // ensure shape
+    expenses = data.map(d => ({
+      id: d.id || uid(),
+      name: d.name || 'Untitled',
+      amount: Number(d.amount || 0),
+      category: d.category || 'Other',
+      date: d.date || new Date().toISOString().slice(0,10),
+      recurring: !!d.recurring,
+      createdAt: d.createdAt || new Date().toISOString()
+    }));
+    saveLocal(); // keep local copy
+    return expenses;
+  } catch (err) {
+    // fallback to local
+    expenses = loadLocal();
+    if (expenses.length) toast('Offline: using local data');
+    else toast('No backend & no local data');
+    return expenses;
+  }
+}
+
+/**
+ * Post expense to server if available; otherwise add locally
+ */
+async function postExpenseToServer(exp) {
+  try {
+    const res = await fetch(`${API_URL}/expenses`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(exp)
+    });
+    if (!res.ok) throw new Error('Failed to post');
+    const data = await res.json();
+    return data;
+  } catch (e) {
+    // offline mode: store locally and assign id
+    const local = { ...exp, id: exp.id || uid() };
+    expenses.push(local);
+    saveLocal();
+    toast('Saved locally (offline)');
+    return local;
+  }
+}
+
+/**
+ * Delete on server if possible
+ */
+async function deleteExpenseFromServer(id) {
+  try {
+    const res = await fetch(`${API_URL}/expenses/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete');
+    return true;
+  } catch (e) {
+    // fallback: just remove locally
+    const idx = expenses.findIndex(x => x.id === id);
+    if (idx !== -1) {
+      expenses.splice(idx, 1);
+      saveLocal();
+      return true;
+    }
+    return false;
+  }
+}
+
+/* ---------------- RENDER / UI ---------------- */
+
+/**
+ * Fill category filter select
+ */
+function fillCategoryFilter() {
+  const sel = document.getElementById('filterCategory');
+  const cats = Array.from(new Set(expenses.map(e => e.category))).sort();
+  sel.innerHTML = '<option value="">All categories</option>';
+  for (const c of cats) {
+    sel.innerHTML += `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`;
+  }
+}
+
+/**
+ * Escape for safety
+ */
+function escapeHtml(s='') {
+  return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+}
+
+/**
+ * Determine badge class
+ */
+function getBadgeClass(category) {
+  const cat = (category || '').toLowerCase();
+  if (cat.includes('food')) return 'badge food';
+  if (cat.includes('travel')) return 'badge travel';
+  if (cat.includes('shop')) return 'badge shopping';
+  if (cat.includes('bill') || cat.includes('rent')) return 'badge bills';
+  return 'badge other';
+}
+
+/**
+ * Render table rows with current pagination & filters
+ */
+function renderTable(list) {
+  // apply search & filters
+  const search = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+  const catFilter = document.getElementById('filterCategory').value;
+  const from = document.getElementById('filterFrom').value;
+  const to = document.getElementById('filterTo').value;
+
+  let out = list.filter(e => {
+    let ok = true;
+    if (search) ok = (e.name || '').toLowerCase().includes(search) || (e.category||'').toLowerCase().includes(search);
+    if (ok && catFilter) ok = e.category === catFilter;
+    if (ok && from) ok = (e.date >= from);
+    if (ok && to) ok = (e.date <= to);
+    return ok;
+  });
+
+  // sort
+  if (currentSort.key) {
+    const k = currentSort.key;
+    out.sort((a,b) => {
+      let va = a[k], vb = b[k];
+      if (k === 'amount') { va = Number(va); vb = Number(vb); }
+      if (va > vb) return currentSort.asc ? 1 : -1;
+      if (va < vb) return currentSort.asc ? -1 : 1;
+      return 0;
+    });
+  }
+
+  filtered = out;
+  // pagination
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  if (page > totalPages) page = totalPages;
+  const start = (page - 1) * PAGE_SIZE;
+  const pageItems = filtered.slice(start, start + PAGE_SIZE);
+
+  const tbody = document.getElementById('expensesTable');
+  tbody.innerHTML = '';
+  for (const exp of pageItems) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <div style="font-weight:700">${escapeHtml(exp.name)}</div>
+        <div class="muted small">${escapeHtml(exp.id || '')}</div>
+      </td>
+      <td class="amount">${formatCurrency(exp.amount)}</td>
+      <td><span class="${getBadgeClass(exp.category)}">${escapeHtml(exp.category)}</span></td>
+      <td>${escapeHtml(exp.date)}</td>
+      <td>
+        <button class="btn ghost" onclick="openEdit('${exp.id}')">✏️</button>
+        <button class="btn" style="background:${'var(--danger)'};color:#fff" onclick="promptDelete('${exp.id}')">🗑️</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // render pager
+  renderPager(Math.max(1, Math.ceil(filtered.length / PAGE_SIZE)));
+}
+
+/**
+ * Render pager
+ */
+function renderPager(totalPages) {
+  const pager = document.getElementById('pager');
+  pager.innerHTML = '';
+  if (totalPages <= 1) return;
+  const start = Math.max(1, page - 2);
+  const end = Math.min(totalPages, page + 2);
+  if (page > 1) {
+    const prev = document.createElement('button'); prev.className = 'page-btn'; prev.innerText = '‹ Prev'; prev.onclick = () => { page--; renderTable(expenses); };
+    pager.appendChild(prev);
+  }
+  for (let i = start; i <= end; i++) {
+    const b = document.createElement('button');
+    b.className = 'page-btn';
+    b.style.fontWeight = (i === page ? 800 : 600);
+    b.innerText = i;
+    b.onclick = () => { page = i; renderTable(expenses); };
+    pager.appendChild(b);
+  }
+  if (page < totalPages) {
+    const next = document.createElement('button'); next.className = 'page-btn'; next.innerText = 'Next ›'; next.onclick = () => { page++; renderTable(expenses); };
+    pager.appendChild(next);
+  }
+}
+
+/* ---------------- CHARTS ---------------- */
+
+/**
+ * Compute totals by category
+ */
+function computeCategoryTotals(list) {
+  const c = {};
+  for (const e of list) c[e.category] = (c[e.category] || 0) + Number(e.amount);
+  return c;
+}
+
+/**
+ * Compute monthly totals (YYYY-MM)
+ */
+function computeMonthlyTotals(list) {
+  const m = {};
+  for (const e of list) {
+    if (!e.date) continue;
+    const key = e.date.slice(0,7);
+    m[key] = (m[key] || 0) + Number(e.amount);
+  }
+  return Object.fromEntries(Object.entries(m).sort((a,b) => a[0].localeCompare(b[0])));
+}
+
+/**
+ * Update all charts
+ */
+function updateCharts(list = expenses) {
+  const catTotals = computeCategoryTotals(list);
+  const monthTotals = computeMonthlyTotals(list);
+
+  // CATEGORY DOUGHNUT — polished, soft gradients, 3D-like feel
+  const catCtx = document.getElementById('categoryChart').getContext('2d');
+  if (categoryChart) categoryChart.destroy();
+
+  // background colors: soft palette
+  const colors = [
+    'rgba(52,152,219,0.85)', 'rgba(46,204,113,0.85)', 'rgba(241,196,15,0.85)',
+    'rgba(231,76,60,0.85)', 'rgba(155,89,182,0.85)', 'rgba(230,126,34,0.85)'
+  ];
+  const labels = Object.keys(catTotals);
+  const data = Object.values(catTotals);
+  const borderColors = colors.map(c => c.replace('0.85', '1'));
+
+  categoryChart = new Chart(catCtx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: colors.slice(0, labels.length), borderColor: borderColors.slice(0, labels.length), borderWidth: 1, hoverOffset: 12 }] },
+    options: {
+      cutout: '60%',
+      plugins: {
+        legend: { position: 'bottom', labels: { color: document.body.classList.contains('dark') ? '#eaf6ff' : '#102030' } },
+        tooltip: { backgroundColor: 'rgba(0,0,0,0.72)', titleColor: '#fff', bodyColor: '#fff', padding: 10 }
+      },
+      animation: { duration: 600, easing: 'cubicBezier(.2,.8,.2,1)' }
+    }
+  });
+
+  // MONTHLY BAR — gradient bars with rounded corners
+  const monthCtx = document.getElementById('monthlyChart').getContext('2d');
+  if (monthlyChart) monthlyChart.destroy();
+  const lbls = Object.keys(monthTotals);
+  const vals = Object.values(monthTotals);
+
+  const gradient = monthCtx.createLinearGradient(0, 0, 0, 300);
+  gradient.addColorStop(0, 'rgba(52,152,219,0.96)');
+  gradient.addColorStop(1, 'rgba(41,128,185,0.62)');
+
+  monthlyChart = new Chart(monthCtx, {
+    type: 'bar',
+    data: {
+      labels: lbls,
+      datasets: [{
+        label: 'Monthly Spending',
+        data: vals,
+        backgroundColor: gradient,
+        borderRadius: 10,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(20,36,56,0.9)', titleColor: '#fff', bodyColor: '#fff' } },
+      scales: {
+        x: { ticks: { color: document.body.classList.contains('dark') ? '#eaf6ff' : '#102030' }, grid: { display: false } },
+        y: { ticks: { color: document.body.classList.contains('dark') ? '#eaf6ff' : '#102030' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      },
+      animation: { duration: 600, easing: 'cubicBezier(.2,.8,.2,1)' }
+    }
+  });
+
+  // TREND LINE — smooth curve with soft gradient fill
+  const trendCtx = document.getElementById('trendChart').getContext('2d');
+  if (trendChart) trendChart.destroy();
+
+  const gradLine = trendCtx.createLinearGradient(0, 0, 0, 300);
+  gradLine.addColorStop(0, 'rgba(46,204,113,0.45)');
+  gradLine.addColorStop(1, 'rgba(46,204,113,0.02)');
+
+  trendChart = new Chart(trendCtx, {
+    type: 'line',
+    data: {
+      labels: lbls,
+      datasets: [{
+        label: 'Spending Trend',
+        data: vals,
+        borderColor: 'rgba(46,204,113,0.95)',
+        backgroundColor: gradLine,
+        fill: true,
+        tension: 0.36,
+        borderWidth: 3,
+        pointRadius: 4,
+        pointBackgroundColor: '#fff',
+        pointBorderColor: 'rgba(46,204,113,0.95)'
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(0,0,0,0.82)', titleColor: '#fff', bodyColor: '#fff' } },
+      scales: {
+        x: { ticks: { color: document.body.classList.contains('dark') ? '#eaf6ff' : '#102030' }, grid: { display: false } },
+        y: { ticks: { color: document.body.classList.contains('dark') ? '#eaf6ff' : '#102030' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      },
+      animation: { duration: 700, easing: 'cubicBezier(.2,.8,.2,1)' }
+    }
+  });
+}
+
+/* ---------------- TOTALS & BUDGET ---------------- */
+
+/**
+ * Update totals & budget progress
+ */
+function updateTotalsAndBudget() {
+  const total = expenses.reduce((s, e) => s + Number(e.amount), 0);
+  document.getElementById('totalAmount').innerText = formatCurrency(total);
+
+  // monthly
+  const now = new Date();
+  const yyyyMm = now.toISOString().slice(0,7);
+  const monthlyTotal = expenses.filter(e => e.date && e.date.slice(0,7) === yyyyMm).reduce((s, e) => s + Number(e.amount), 0);
+
+  const budget = Number(localStorage.getItem(BUDGET_KEY) || 0);
+  document.getElementById('budgetSpent').innerText = formatCurrency(monthlyTotal);
+  document.getElementById('budgetValue').innerText = formatCurrency(budget);
+  document.getElementById('budgetMonthLabel').innerText = yyyyMm;
+
+  let percent = budget > 0 ? Math.round((monthlyTotal / budget) * 100) : 0;
+  percent = Math.min(100, percent);
+  const bar = document.getElementById('budgetProgressBar');
+  bar.style.width = percent + '%';
+
+  if (percent >= 100) {
+    bar.style.background = 'linear-gradient(90deg,#ff6b6b,#ffb86b)';
+    toast('⚠️ Monthly budget exceeded', 3000);
+  } else if (percent >= 80) {
+    bar.style.background = 'linear-gradient(90deg,#ffb86b,#ff6b6b)';
+  } else {
+    bar.style.background = 'linear-gradient(90deg,var(--accent), #a8e063)';
+  }
+}
+
+/* ---------------- CRUD OPERATIONS ---------------- */
+
+/**
+ * Add expense (form submit)
+ */
+async function addExpenseFromForm(e) {
+  e.preventDefault();
+  const name = document.getElementById('name').value.trim();
+  const amount = Number(document.getElementById('amount').value);
+  const category = document.getElementById('category').value.trim() || 'Other';
+  const date = document.getElementById('date').value;
+
+  if (!name || !date || !amount) { toast('Please fill name, amount and date'); return; }
+
+  const expense = {
+    id: uid(),
+    name, amount, category, date,
+    recurring: document.getElementById('recurring').checked,
+    createdAt: new Date().toISOString()
+  };
+
+  // Optimistically push and save (will attempt server post in background)
+  expenses.unshift(expense);
+  saveLocal();
+  toast('Added');
+  refreshAll();
+
+  // try to send to server
+  postExpenseToServer(expense).then(resp => {
+    // if server returns canonical id or data, update local record
+    if (resp && resp.id && resp.id !== expense.id) {
+      // replace local id
+      const idx = expenses.findIndex(x => x.id === expense.id);
+      if (idx !== -1) { expenses[idx].id = resp.id; saveLocal(); }
+    }
+  }).catch(() => {});
+}
+
+/**
+ * Prompt delete
+ */
+function promptDelete(id) {
+  const mb = document.getElementById('modalBackdrop');
+  mb.style.display = 'flex';
+  document.getElementById('modalText').innerText = 'Confirm deletion. This can be undone immediately.';
+  const confirmBtn = document.getElementById('confirmModal');
+  const cancelBtn = document.getElementById('cancelModal');
+
+  confirmBtn.onclick = async () => {
+    await doDelete(id);
+    mb.style.display = 'none';
+  };
+  cancelBtn.onclick = () => { mb.style.display = 'none'; };
+}
+
+/**
+ * Delete and support undo toast
+ */
+async function doDelete(id) {
+  const idx = expenses.findIndex(x => x.id === id);
+  if (idx === -1) { toast('Not found'); return; }
+  lastDeleted = expenses[idx];
+  expenses.splice(idx, 1);
+  saveLocal();
+  refreshAll();
+
+  const success = await deleteExpenseFromServer(id);
+  if (success) {
+    showUndoToast();
+  } else {
+    toast('Removed locally (server unavailable)');
+  }
+}
+
+/**
+ * Undo toast UI
+ */
+function showUndoToast() {
+  const wrap = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = 'Expense deleted <button id="undoBtn" style="margin-left:8px;padding:6px;border-radius:8px;background:#fff;color:#000;font-weight:700">UNDO</button>';
+  wrap.appendChild(t);
+  let removed = false;
+  const undoBtn = t.querySelector('#undoBtn');
+  const tid = setTimeout(() => { if (!removed) t.remove(); }, 4200);
+  undoBtn.onclick = async () => {
+    removed = true; clearTimeout(tid); t.remove();
+    if (lastDeleted) {
+      const restored = await postExpenseToServer(lastDeleted);
+      if (!expenses.find(x => x.id === restored.id)) expenses.unshift(restored);
+      saveLocal();
+      refreshAll();
+      toast('Restored');
+      lastDeleted = null;
+    }
+  };
+}
+
+/**
+ * Edit via quick prompt (simple)
+ */
+function openEdit(id) {
+  const e = expenses.find(x => x.id === id);
+  if (!e) { toast('Not found'); return; }
+  const newName = prompt('Edit name', e.name) || e.name;
+  const newAmount = prompt('Edit amount', e.amount) || e.amount;
+  const newCategory = prompt('Edit category', e.category) || e.category;
+  const newDate = prompt('Edit date (YYYY-MM-DD)', e.date) || e.date;
+
+  e.name = newName; e.amount = Number(newAmount); e.category = newCategory; e.date = newDate;
+  saveLocal();
+  refreshAll();
+
+  // attempt to sync with server if PUT available
+  (async () => {
+    try {
+      const res = await fetch(`${API_URL}/expenses/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(e) });
+      if (res.ok) toast('Updated on server');
+    } catch (err) { /* silent */ }
+  })();
+}
+
+/* ---------------- EXPORT / IMPORT ---------------- */
+
+/**
+ * Download helper
+ */
+function downloadFile(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Export CSV
+ */
+function exportCSV() {
+  const header = ['id', 'name', 'amount', 'category', 'date', 'recurring', 'createdAt'];
+  const rows = expenses.map(e => [e.id, `"${String(e.name).replace(/"/g,'""')}"`, e.amount, `"${String(e.category).replace(/"/g,'""')}"`, e.date, e.recurring, e.createdAt]);
+  const csv = [header.join(',')].concat(rows.map(r => r.join(','))).join('\n');
+  downloadFile(csv, 'expenses_export.csv', 'text/csv');
+  toast('CSV exported');
+}
+
+/**
+ * Export JSON
+ */
+function exportJSON() {
+  downloadFile(JSON.stringify(expenses, null, 2), 'expenses_export.json', 'application/json');
+  toast('JSON exported');
+}
+
+/**
+ * Export PDF (capture dashboard)
+ */
+async function exportPDF() {
+  try {
+    // render visible dashboard into a clone area to ensure clean PDF
+    const capture = document.getElementById('pdfCapture');
+    capture.innerHTML = ''; // clear
+    const clone = document.querySelector('.container').cloneNode(true);
+    clone.style.width = '800px';
+    capture.appendChild(clone);
+    // use html2canvas
+    const canvas = await html2canvas(clone, { scale: 2, useCORS: true });
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('landscape', 'pt', 'a4');
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save('expense_dashboard.pdf');
+    capture.innerHTML = '';
+    toast('PDF exported');
+  } catch (e) {
+    console.error(e);
+    toast('PDF export failed');
+  }
+}
+
+/**
+ * Import CSV (naive parsing)
+ */
+async function importCSVFile(file) {
+  if (!file) return;
+  const text = await file.text();
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l);
+  if (lines.length < 1) { toast('Empty CSV'); return; }
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+  const idxName = headers.indexOf('name');
+  const idxAmount = headers.indexOf('amount');
+  const idxCategory = headers.indexOf('category');
+  const idxDate = headers.indexOf('date');
+  if (idxName === -1 || idxAmount === -1 || idxDate === -1) {
+    toast('CSV must contain name,amount,date columns');
+    return;
+  }
+  const imported = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(',');
+    if (!cols[idxName]) continue;
+    const rec = {
+      id: uid(),
+      name: cols[idxName].trim(),
+      amount: Number(cols[idxAmount] || 0),
+      category: idxCategory !== -1 ? (cols[idxCategory].trim() || 'Other') : 'Other',
+      date: cols[idxDate].trim() || new Date().toISOString().slice(0,10),
+      recurring: false,
+      createdAt: new Date().toISOString()
+    };
+    imported.push(rec);
+    expenses.push(rec);
+  }
+  saveLocal();
+  refreshAll();
+  toast(`${imported.length} imported`);
+}
+
+/* ---------------- FILTER / SORT UI BINDINGS ---------------- */
+
+/**
+ * Wire up sorting on header click
+ */
+document.querySelectorAll('th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const key = th.dataset.sort;
+    currentSort.asc = currentSort.key === key ? !currentSort.asc : true;
+    currentSort.key = key;
+    renderTable(expenses);
+  });
+});
+
+/* ---------------- THEME TOGGLE ---------------- */
+function applySavedTheme() {
+  const t = localStorage.getItem(THEME_KEY) || 'dark';
+  if (t === 'dark') document.body.classList.add('dark');
+  else document.body.classList.remove('dark');
+}
+applySavedTheme();
+
+document.getElementById('themeToggle').addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  localStorage.setItem(THEME_KEY, document.body.classList.contains('dark') ? 'dark' : 'light');
+  updateCharts();
+});
+
+/* ---------------- FORM / BUTTON BINDINGS ---------------- */
+document.getElementById('expenseForm').addEventListener('submit', addExpenseFromForm);
+document.getElementById('clearFormBtn').addEventListener('click', () => {
+  document.getElementById('expenseForm').reset();
+});
+document.querySelectorAll('.quick-cat').forEach(btn => {
+  btn.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    document.getElementById('category').value = btn.innerText;
+  });
+});
+
+/* search & filters */
+document.getElementById('searchInput').addEventListener('input', () => { page = 1; renderTable(expenses); });
+document.getElementById('filterCategory').addEventListener('change', () => { page = 1; renderTable(expenses); });
+document.getElementById('filterFrom').addEventListener('change', () => { page = 1; renderTable(expenses); });
+document.getElementById('filterTo').addEventListener('change', () => { page = 1; renderTable(expenses); });
+
+document.getElementById('applyFilters').addEventListener('click', () => { page = 1; renderTable(expenses); });
+document.getElementById('resetFilters').addEventListener('click', () => {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('filterCategory').value = '';
+  document.getElementById('filterFrom').value = '';
+  document.getElementById('filterTo').value = '';
+  page = 1; renderTable(expenses);
+});
+
+/* export / import binds */
+document.getElementById('exportCSVBtn').addEventListener('click', exportCSV);
+document.getElementById('exportJSONBtn').addEventListener('click', exportJSON);
+document.getElementById('exportPDFBtn').addEventListener('click', exportPDF);
+document.getElementById('importBtn').addEventListener('click', () => document.getElementById('csvFile').click());
+document.getElementById('csvFile').addEventListener('change', (ev) => {
+  const f = ev.target.files[0]; if (f) importCSVFile(f);
+});
+document.getElementById('backupBtn').addEventListener('click', backupLocal);
+document.getElementById('restoreBtn').addEventListener('click', restoreLocal);
+
+/* budget set */
+document.getElementById('setBudgetBtn').addEventListener('click', () => {
+  const v = Number(document.getElementById('budgetInput').value || 0);
+  if (!v || v <= 0) { toast('Enter a valid budget'); return; }
+  localStorage.setItem(BUDGET_KEY, v);
+  toast('Budget saved');
+  updateTotalsAndBudget();
+});
+
+/* modal actions (cancel) */
+document.getElementById('cancelModal').addEventListener('click', () => {
+  document.getElementById('modalBackdrop').style.display = 'none';
+});
+
+/* ---------------- REFRESH ROUTINES ---------------- */
+
+/**
+ * Recompute charts, totals, table, etc.
+ */
+function refreshAll() {
+  fillCategoryFilter();
+  renderTable(expenses);
+  updateCharts();
+  updateTotalsAndBudget();
+}
+
+/* ---------------- INIT LOAD ---------------- */
+(async function init() {
+  // Load from backend or local
+  await fetchExpenses();
+  // If no budget stored, set default to 0
+  if (!localStorage.getItem(BUDGET_KEY)) {
+    localStorage.setItem(BUDGET_KEY, '0');
+  }
+  // Bind initial UI values
+  document.getElementById('budgetInput').value = localStorage.getItem(BUDGET_KEY) || '';
+  // Update UI
+  refreshAll();
+})();
+
+/* expose some functions for inline use (debug) */
+window.promptDelete = promptDelete;
+window.openEdit = openEdit;
+window.exportCSV = exportCSV;
+window.exportJSON = exportJSON;
+
+  </script>
+</body>
+</html>
