@@ -131,8 +131,7 @@ body {
 /* input controls inside card */
 .form-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
 .input {
-  padding: 14px 16px; /* MODIFIED: Increased padding for more space */
-  border-radius:10px; min-width:150px;
+  padding:10px 12px; border-radius:10px; min-width:150px;
   border:1px solid rgba(255,255,255,0.04);
   background: rgba(255,255,255,0.03);
   color: #eaf4ff; font-weight:500;
@@ -217,7 +216,7 @@ tbody tr:hover { background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba
 
       <div class="controls">
         <button class="btn ghost" id="importBtn">📥 Import CSV</button>
-        <input type="file" id="csvFile" class="file-input" accept=".csv" style="display:none" />
+        <input type="file" id="csvFile" class="file-input" accept=".csv" style="display:none" /> 
         <button class="btn ghost" id="exportCSVBtn">📤 Export CSV</button>
         <button class="btn ghost" id="exportJSONBtn">📤 Export JSON</button>
         <button class="btn ghost" id="exportPDFBtn">🖨 Export PDF</button>
@@ -230,7 +229,7 @@ tbody tr:hover { background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba
     <main class="card" style="min-height:100px;">
       <section>
         <form id="expenseForm" aria-label="Add expense form">
-          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <div style="display:flex; gap:18px; flex-wrap:wrap; align-items:center;">
             <div style="flex:1; min-width:160px;">
               <label class="label">Name</label>
               <input id="name" class="input" placeholder="e.g., Coffee at office" required />
@@ -413,7 +412,7 @@ function uid() {
  */
 function formatCurrency(v) {
   if (v === null || v === undefined || isNaN(v)) return '₹0.00';
-  return '₹' + Number(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return '₹' + Number(v).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 /**
@@ -1151,11 +1150,7 @@ document.getElementById('cancelModal').addEventListener('click', () => {
   document.getElementById('modalBackdrop').style.display = 'none';
 });
 
-/* ---------------- REFRESH ROUTINES ---------------- */
 
-/**
- * Recompute charts, totals, table, etc.
- */
 function refreshAll() {
   fillCategoryFilter();
   renderTable(expenses);
@@ -1163,21 +1158,15 @@ function refreshAll() {
   updateTotalsAndBudget();
 }
 
-/* ---------------- INIT LOAD ---------------- */
 (async function init() {
-  // Load from backend or local
   await fetchExpenses();
-  // If no budget stored, set default to 0
   if (!localStorage.getItem(BUDGET_KEY)) {
     localStorage.setItem(BUDGET_KEY, '0');
   }
-  // Bind initial UI values
   document.getElementById('budgetInput').value = localStorage.getItem(BUDGET_KEY) || '';
-  // Update UI
   refreshAll();
 })();
 
-/* expose some functions for inline use (debug) */
 window.promptDelete = promptDelete;
 window.openEdit = openEdit;
 window.exportCSV = exportCSV;
