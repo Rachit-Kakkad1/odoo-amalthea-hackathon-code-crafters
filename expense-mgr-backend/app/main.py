@@ -4,7 +4,6 @@ from fastapi.staticfiles import StaticFiles
 from .database import Base, engine
 from .routers import auth_router, users_router, expenses_router, approvals_router, admin_router, currency_router
 from .services.analytics import generate_analytics
-from sqlalchemy.ext.asyncio import AsyncEngine
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -20,23 +19,22 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Restrict in production
+    allow_origins=["*"],  # Restrict to specific origins in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Serve static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.on_event("startup")
-async def startup_event() -> None:
+async def startup_event():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     logger.info("Database tables created successfully")
 
 @app.on_event("shutdown")
-async def shutdown_event() -> None:
+async def shutdown_event():
     logger.info("Application shutting down")
 
 @app.get("/analytics", dependencies=[Depends(deps.is_admin)])

@@ -1,5 +1,3 @@
-# app/routers/approvals.py
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
@@ -24,9 +22,9 @@ async def approve_or_reject(
     db: AsyncSession = Depends(get_db),
     current_user: UserModel = Depends(is_manager_or_admin)
 ):
-    approval = await crud.get_approval_request(db, approval_id)
+    approval = await get_approval_request(db, approval_id)
     if not approval or approval.approver_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized for this approval")
     updated_approval = await update_approval_request(db, approval_id, approval_in.dict(exclude_unset=True))
     await evaluate_approval(db, approval.expense_id)
-    return updated_approval 
+    return updated_approval

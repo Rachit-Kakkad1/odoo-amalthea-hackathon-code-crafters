@@ -1,5 +1,3 @@
-# app/routers/expenses.py
-
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
@@ -8,7 +6,8 @@ from app.crud import create_expense, get_expenses_by_user
 from app.deps import get_db, get_current_active_user
 from app.services.currency_service import convert_currency
 from app.services.ocr import process_ocr
-from app.models import Expense as ExpenseModel, UserModel, Company
+from app.models import Expense as ExpenseModel, User as UserModel, Company
+from sqlalchemy.sql import func
 
 router = APIRouter()
 
@@ -21,7 +20,7 @@ async def submit_expense(
 ):
     if current_user.role not in [Role.EMPLOYEE, Role.MANAGER, Role.ADMIN]:
         raise HTTPException(status_code=403, detail="Permission denied")
-    db_company = await crud.get_company_by_id(db, current_user.company_id)
+    db_company = await get_company_by_id(db, current_user.company_id)
     if not db_company:
         raise HTTPException(status_code=404, detail="Company not found")
     company_currency = db_company.currency
@@ -30,7 +29,7 @@ async def submit_expense(
 
     receipt_path = None
     if receipt:
-        receipt_path = await process_ocr(receipt)  # Implement OCR to auto-fill fields if needed
+        receipt_path = await process_ocr(receipt)
 
     new_expense = ExpenseModel(
         employee_id=current_user.id,
@@ -47,8 +46,6 @@ async def submit_expense(
     db.add(new_expense)
     await db.commit()
     await db.refresh(new_expense)
-    # Start approval workflow
-    await services.approval_workflow.start_approval_workflow(db, new_expense, current_user.dict())
     return new_expense
 
 @router.get("/", response_model=List[Expense])

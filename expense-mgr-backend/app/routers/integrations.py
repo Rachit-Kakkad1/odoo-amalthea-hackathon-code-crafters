@@ -1,5 +1,3 @@
-# app/routers/integrations.py
-
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.deps import get_db, get_current_active_user
@@ -15,7 +13,6 @@ async def upload_receipt_for_ocr(
 ):
     try:
         extracted = await process_ocr(receipt)
-        # You can save or return the extracted data
         return extracted
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

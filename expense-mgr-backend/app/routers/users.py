@@ -1,5 +1,3 @@
-# app/routers/users.py
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
@@ -7,11 +5,16 @@ from app.schemas import User, UserCreate
 from app.crud import create_user, get_users_by_company, get_user, update_user
 from app.deps import get_db, is_admin
 from app.models import User as UserModel
+from app.auth import get_password_hash
 
 router = APIRouter()
 
 @router.post("/", response_model=User)
-async def create_new_user(user_in: UserCreate, db: AsyncSession = Depends(get_db), current_user: UserModel = Depends(is_admin)):
+async def create_new_user(
+    user_in: UserCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserModel = Depends(is_admin)
+):
     user = await get_user_by_username(db, user_in.username)
     if user:
         raise HTTPException(status_code=400, detail="Username already registered")
@@ -26,7 +29,10 @@ async def create_new_user(user_in: UserCreate, db: AsyncSession = Depends(get_db
     return new_user
 
 @router.get("/", response_model=List[User])
-async def get_users(db: AsyncSession = Depends(get_db), current_user: UserModel = Depends(is_admin)):
+async def get_users(
+    db: AsyncSession = Depends(get_db),
+    current_user: UserModel = Depends(is_admin)
+):
     return await get_users_by_company(db, current_user.company_id)
 
 @router.patch("/{user_id}", response_model=User)

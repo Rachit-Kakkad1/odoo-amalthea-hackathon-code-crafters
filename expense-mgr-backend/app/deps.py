@@ -12,3 +12,8 @@ def is_admin(current_user: User = Depends(get_current_active_user)):
     if current_user.role != "ADMIN":
         raise HTTPException(status_code=403, detail="Admin access required")
     return current_user
+
+def is_manager_or_admin(current_user: User = Depends(get_current_active_user)):
+    if current_user.role not in ["MANAGER", "ADMIN"]:
+        raise HTTPException(status_code=403, detail="Manager or Admin access required")
+    return current_user

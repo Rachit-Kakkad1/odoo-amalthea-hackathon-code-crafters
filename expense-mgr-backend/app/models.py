@@ -32,6 +32,7 @@ class User(Base):
     company_id = Column(Integer, ForeignKey("companies.id"))
     manager_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     is_manager_approver = Column(Boolean, default=True)
+    reset_token = Column(String, nullable=True)
     company = relationship("Company", back_populates="users")
     manager = relationship("User", remote_side=[id], back_populates="employees")
     employees = relationship("User", back_populates="manager")
