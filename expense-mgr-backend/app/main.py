@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from .database import Base, engine
 from .routers import auth_router, users_router, expenses_router, approvals_router, admin_router, currency_router
 from .services.analytics import generate_analytics
@@ -19,11 +20,14 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: Restrict in production
+    allow_origins=["*"],  # Restrict in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Serve static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.on_event("startup")
 async def startup_event() -> None:
@@ -47,5 +51,5 @@ app.include_router(admin_router.router, prefix="/admin", tags=["Admin"])
 app.include_router(currency_router.router, prefix="/currency", tags=["Currency"])
 
 @app.get("/")
-def root() -> dict:
-    return {"message": "Welcome to the Expense Management System API", "time": utils.get_current_datetime().isoformat()}
+async def root():
+    return {"message": "Welcome to the Expense Management System. Visit /static/index.html", "time": utils.get_current_datetime().isoformat()}

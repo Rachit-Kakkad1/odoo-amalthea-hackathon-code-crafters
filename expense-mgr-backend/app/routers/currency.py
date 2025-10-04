@@ -1,5 +1,7 @@
+# app/routers/currency.py
+
 from fastapi import APIRouter, Query, HTTPException
-from ..services.currency_service import get_countries_and_currencies, convert_currency
+from app.services.currency_service import get_countries_and_currencies, convert_currency
 
 router = APIRouter()
 
