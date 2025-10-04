@@ -27,19 +27,16 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event() -> None:
-    """Create all database tables on application startup."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     logger.info("Database tables created successfully")
 
 @app.on_event("shutdown")
 async def shutdown_event() -> None:
-    """Cleanup on shutdown."""
     logger.info("Application shutting down")
 
 @app.get("/analytics", dependencies=[Depends(deps.is_admin)])
 async def get_analytics():
-    """Real-time analytics for admin."""
     return await generate_analytics()
 
 app.include_router(auth_router.router, prefix="/auth", tags=["Auth"])
@@ -51,5 +48,4 @@ app.include_router(currency_router.router, prefix="/currency", tags=["Currency"]
 
 @app.get("/")
 def root() -> dict:
-    """Return a welcome message for the root endpoint."""
     return {"message": "Welcome to the Expense Management System API", "time": utils.get_current_datetime().isoformat()}
