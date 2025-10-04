@@ -2,16 +2,16 @@ from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from app.schemas import Expense, ExpenseCreate
-from app.crud import create_expense, get_expenses_by_user
+from app.crud import create_expense, get_expenses_by_user, get_company_by_id
 from app.deps import get_db, get_current_active_user
 from app.services.currency_service import convert_currency
 from app.services.ocr import process_ocr
-from app.models import Expense as ExpenseModel, User as UserModel, Company
+from app.models import Expense as ExpenseModel, User as UserModel, Company, Role
 from sqlalchemy.sql import func
 
 router = APIRouter()
 
-@router.post("/", response_model=Expense)
+@router.post("/", response_model=Expense, response_model_exclude_none=True)
 async def submit_expense(
     expense_in: ExpenseCreate,
     receipt: UploadFile = File(None),
@@ -25,7 +25,7 @@ async def submit_expense(
         raise HTTPException(status_code=404, detail="Company not found")
     company_currency = db_company.currency
 
-    converted_amount = convert_currency(expense_in.amount, expense_in.currency, company_currency)
+    converted_amount = await convert_currency(expense_in.amount, expense_in.currency, company_currency)
 
     receipt_path = None
     if receipt:
@@ -48,7 +48,7 @@ async def submit_expense(
     await db.refresh(new_expense)
     return new_expense
 
-@router.get("/", response_model=List[Expense])
+@router.get("/", response_model=List[Expense], response_model_exclude_none=True)
 async def view_expense_history(
     db: AsyncSession = Depends(get_db),
     current_user: UserModel = Depends(get_current_active_user)

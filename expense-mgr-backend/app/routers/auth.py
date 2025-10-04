@@ -9,11 +9,12 @@ from app.services.currency_service import get_currency_from_country
 import smtplib
 from email.mime.text import MIMEText
 from app.config import settings
+import asyncio
 from sqlalchemy import select
 
 router = APIRouter()
 
-@router.post("/signup", response_model=Token)
+@router.post("/signup", response_model=Token, response_model_exclude_none=True)
 async def signup(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db),
@@ -22,7 +23,7 @@ async def signup(
     user = await get_user_by_username(db, form_data.username)
     if user:
         raise HTTPException(status_code=400, detail="Username already registered")
-    currency = get_currency_from_country(country)
+    currency = await get_currency_from_country(country)
     company = await create_company(db, {"name": f"{form_data.username}'s Company", "currency": currency})
     hashed_password = get_password_hash(form_data.password)
     new_user = await create_user(db, {
@@ -35,7 +36,7 @@ async def signup(
     access_token = create_access_token({"sub": new_user.username})
     return {"access_token": access_token, "token_type": "bearer"}
 
-@router.post("/token", response_model=Token)
+@router.post("/token", response_model=Token, response_model_exclude_none=True)
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
     user = await authenticate_user(db, form_data.username, form_data.password)
     if not user:
@@ -58,11 +59,14 @@ async def forgot_password(request: PasswordResetRequest, db: AsyncSession = Depe
     msg['From'] = settings.SMTP_USER
     msg['To'] = request.email
 
-    try:
+    def _send_email_blocking():
         with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
             server.starttls()
             server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
             server.send_message(msg)
+
+    try:
+        await asyncio.to_thread(_send_email_blocking)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
 

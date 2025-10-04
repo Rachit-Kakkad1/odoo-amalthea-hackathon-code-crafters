@@ -4,8 +4,9 @@ from .config import settings
 
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=True,
-    future=True
+    echo=settings.DEBUG,  # verbose only in development
+    future=True,
+    pool_pre_ping=True,
 )
 
 AsyncSessionLocal = sessionmaker(

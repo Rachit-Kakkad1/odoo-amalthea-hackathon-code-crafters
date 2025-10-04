@@ -1,5 +1,5 @@
 fastapi==0.115.0
-uvicorn==0.31.0
+uvicorn[standard]==0.31.0
 sqlalchemy[asyncio]==2.0.35
 psycopg[binary,pool]==3.2.3
 alembic==1.13.3
@@ -8,16 +8,13 @@ pydantic-settings==2.5.2
 passlib[bcrypt]==1.7.4
 python-jose[cryptography]==3.3.0
 python-multipart==0.0.12
-requests==2.32.3
-pytesseract==0.3.10
-pillow==10.4.0
+httpx==0.27.2
+orjson==3.10.7
 asyncpg==0.29.0
-smtplib==1.0.0
 structlog==24.2.0
-pytest==8.3.2
-pytest-asyncio==0.23.8
-black==24.4.2
-flake8==7.1.0
-mypy==1.11.2
-locust==2.16.2
-bandit==1.7.8
+
+# Optional OCR dependencies (install only if OCR is used)
+# pytesseract==0.3.10
+# pillow==10.4.0
+
+# Email via standard library (no external dep)
