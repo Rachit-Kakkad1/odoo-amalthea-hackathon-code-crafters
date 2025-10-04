@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Expense Management</title>
+    <style>
+        /* --- General Variables & Setup --- */
+        :root {
+            --primary-color: #007bff; /* Blue */
+            --success-color: #28a745; /* Green */
+            --light-text: #fff;
+            --dark-text: #1c1e21;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            
+            /* Auto-changing background gradient (The subtle animation makes it feel alive) */
+            background: linear-gradient(270deg, #ff7e5f, #feb47b, #86a8e7, #5ffbf1);
+            background-size: 800% 800%;
+            animation: colorCycle 20s ease infinite;
+        }
+
+        /* --- Background Animations --- */
+        @keyframes colorCycle {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Animated Background Blobs */
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.5;
+            z-index: 0;
+            transition: all 0.5s ease-out; /* Added transition for media query smoothness */
+        }
+
+        .blob1 {
+            width: 400px;
+            height: 400px;
+            background: #ff6b6b;
+            top: -150px;
+            left: -150px;
+            animation: move 20s infinite alternate;
+        }
+
+        .blob2 {
+            width: 300px;
+            height: 300px;
+            background: #feca57;
+            bottom: -100px;
+            right: -100px;
+            animation: move 25s infinite alternate-reverse;
+        }
+
+        @keyframes move {
+            from {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            to {
+                transform: translate(200px, 100px) rotate(360deg);
+            }
+        }
+        
+        /* --- Mobile Responsiveness: Scale down the blobs --- */
+        @media (max-width: 600px) {
+            .blob1 { width: 250px; height: 250px; top: -100px; left: -100px; }
+            .blob2 { width: 200px; height: 200px; bottom: -50px; right: -50px; }
+            @keyframes move {
+                to {
+                    transform: translate(100px, 50px) rotate(360deg);
+                }
+            }
+        }
+
+
+        /* --- Glassmorphism Card Style --- */
+        .signup-box {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px); /* For Safari compatibility */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            z-index: 1; /* Ensure form is above blobs */
+            animation: slideIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(50px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .signup-box h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 28px;
+            color: var(--light-text);
+        }
+
+        .signup-box p {
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 17px;
+
+
+        }
+        
+        /* --- NEW PROFESSIONAL ANIMATION: Staggered Fade In for Inputs --- */
+        @keyframes inputFadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Apply base animation to all animated elements inside the form */
+        .input-group, button, .login-link {
+            opacity: 0;
+            animation: inputFadeIn 0.4s ease-out forwards;
+        }
+
+        /* Stagger the animation timing */
+        .signup-box form .input-group:nth-child(1) { animation-delay: 0.1s; } /* Full Name */
+        .signup-box form .input-group:nth-child(2) { animation-delay: 0.2s; } /* Email */
+        .signup-box form .input-group:nth-child(3) { animation-delay: 0.3s; } /* Company Name */
+        .signup-box form .input-group:nth-child(4) { animation-delay: 0.4s; } /* Country */
+        .signup-box form .input-group:nth-child(5) { animation-delay: 0.5s; } /* Password */
+        
+        .signup-box button { animation-delay: 0.7s !important; }
+        .signup-box .login-link { animation-delay: 0.8s !important; }
+
+
+        /* --- Input Group & Floating Label --- */
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            background: transparent;
+            color: var(--light-text);
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            /* REVERTED: Removing text-align: center for better readability and UX */
+            text-align: left; 
+        }
+        
+        /* --- NEW PROFESSIONAL ANIMATION: Input Hover Glow --- */
+        .input-group input:hover,
+        .input-group select:hover {
+            border-color: rgba(255, 255, 255, 0.6); 
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.15); /* Soft white glow effect */
+        }
+        
+        .input-group select { 
+            appearance: none; 
+        }
+
+        /* --- Select Custom Arrow (for visual consistency) --- */
+        .input-group.select-group::after {
+            content: '▼';
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            font-size: 12px;
+        }
+        
+        .input-group select option {
+            /* Ensures options in the dropdown menu are visible */
+            color: var(--dark-text); 
+            background: #fff;
+            text-align: left; /* Keep dropdown options left-aligned */
+        }
+
+
+        .input-group input::placeholder { color: transparent; }
+
+        .input-group label {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+            pointer-events: none;
+            transition: all 0.3s ease-out;
+        }
+
+        .input-group input:focus + label,
+        .input-group input:not(:placeholder-shown) + label,
+        .input-group select:valid + label {
+            top: -10px;
+            left: 10px;
+            transform: scale(0.85);
+            background-color: var(--primary-color);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: var(--light-text);
+            font-weight: 600;
+        }
+        
+        .input-group input:focus,
+        .input-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 1px var(--primary-color);
+        }
+
+        /* --- Validation Checkmark (Appears when input is valid) --- */
+        .validation-icon {
+            position: absolute;
+            top: 50%;
+            right: 12px; /* Adjusted to sit next to the toggle button space */
+            transform: translateY(-50%) scale(0);
+            width: 20px;
+            height: 20px;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Added spring effect */
+            z-index: 2;
+        }
+
+        .input-group input:valid:not(:focus) + label + .validation-icon {
+            /* Moves icon in when input is valid */
+            transform: translateY(-50%) scale(1.2);
+        }
+        
+        /* --- Password Toggle Button (Updated for SVG) --- */
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 12px; /* Centered vertically (50%) and aligned to the right (12px) */
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0; 
+            width: 24px; 
+            height: 24px;
+            z-index: 3;
+            transition: color 0.2s; 
+        }
+
+        /* Styling for the SVG icons inside the button */
+        .toggle-password svg {
+            color: rgba(255, 255, 255, 0.7); /* Initial stroke color */
+            width: 100%;
+            height: 100%;
+            transition: color 0.2s;
+        }
+        
+        .toggle-password:hover svg {
+            color: var(--light-text); /* Hover effect on the icon itself */
+        }
+        
+        /* Offset the checkmark when the toggle button is present to avoid overlap */
+        .password-group .validation-icon {
+             right: 40px; /* Shift validation icon left by 40px when toggle is present (24px button + 12px margin) */
+        }
+
+        /* --- Submit Button --- */
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--light-text);
+            color: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease-out;
+            margin-bottom: 25px;
+            /* Added shadow for depth */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); 
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            background-color: #f0f0f0;
+        }
+        
+        /* --- NEW PROFESSIONAL ANIMATION: Immediate Press Feedback --- */
+        button:active {
+            transform: translateY(0);
+            /* Flash of color and tight shadow for immediate feedback */
+            box-shadow: 0 0 0 2px var(--primary-color), 0 4px 15px rgba(0, 0, 0, 0.2); 
+            background-color: var(--primary-color); 
+            color: var(--light-text);
+            transition: all 0.05s ease-in; /* Quick transition for press */
+        }
+
+        /* --- Link for users who already have an account --- */
+        .login-link {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .login-link a {
+            color: var(--light-text);
+            text-decoration: none;
+            font-weight: 700;
+            padding-bottom: 2px;
+            border-bottom: 2px solid transparent;
+            transition: border-bottom 0.2s;
+        }
+
+        .login-link a:hover {
+            border-bottom: 2px solid var(--light-text);
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Animated background elements (Blobs) -->
+    <div class="blob blob1"></div>
+    <div class="blob blob2"></div>
+    
+    <div class="signup-box">
+        <h2>Expense Manager Pro</h2>
+        <p>Create your company and admin account</p>
+
+        <form onsubmit="return false;" id="signup-form">
+            <!-- Full Name (Delay 0.1s) -->
+            <div class="input-group">
+                <input type="text" id="full-name" name="fullName" placeholder=" " required minlength="3" autocomplete="name">
+                <label for="full-name">Your Full Name</label>
+                <span class="validation-icon"></span>
+            </div>
+
+            <!-- Email (Delay 0.2s) -->
+            <div class="input-group">
+                <input type="email" id="email" name="email" placeholder=" " required autocomplete="email">
+                <label for="email">Your Email</label>
+                <span class="validation-icon"></span>
+            </div>
+
+            <!-- Company Name (Delay 0.3s) -->
+            <div class="input-group">
+                <input type="text" id="company-name" name="companyName" placeholder=" " required minlength="2" autocomplete="organization">
+                <label for="company-name">Company Name</label>
+                <span class="validation-icon"></span>
+            </div>
+            
+            <!-- Country (Delay 0.4s) -->
+            <div class="input-group select-group">
+                <select id="country" name="country" required>
+                    <!-- Empty option for floating label to work on select -->
+                    <option value="" disabled selected></option> 
+                    <option value="US">United States</option>
+                    <option value="IN">India</option>
+                    <option value="GB">United Kingdom</option>
+                    <option value="CA">Canada</option>
+                    <option value="AU">Australia</option>
+                    <option value="rus">Russia</option>
+                    <option value="new">New Zeeland</option>
+                    <option value="jap">Japan</option>
+                    <option value="br">Brazil</option>
+                    <option value="DE">Germany</option>
+
+                </select>
+                <label for="country">Country</label>
+            </div>
+
+            <!-- Password (Delay 0.5s) - Icon is Vertically Centered and Right Aligned -->
+            <div class="input-group password-group">
+                <input type="password" id="password" name="password" placeholder=" " required minlength="8" autocomplete="new-password">
+                <label for="password">Password</label>
+                <span class="validation-icon"></span>
+                <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">
+                    <!-- Closed Eye SVG (Default visibility) -->
+                    <svg class="eye-closed" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-10-7-10-7a1.8 1.8 0 0 1 .43-.72M16.5 12.5A4.5 4.5 0 0 0 12 8m-5.4 1.34A12.01 12.01 0 0 0 22 13s-3 7-10 7c-.62 0-1.22-.09-1.8-.26"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <line x1="1" x2="23" y1="1" y2="23"></line>
+                    </svg>
+                    <!-- Open Eye SVG (Initially hidden) -->
+                    <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Button (Delay 0.7s) -->
+            <button type="submit">Create Account</button>
+        </form>
+
+        <!-- Link (Delay 0.8s) -->
+        <div class="login-link">
+            Already have an account? <a href="#">Log In</a>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Toggles the visibility of the password input field using SVG icons.
+         */
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const openEye = document.querySelector('.eye-open');
+            const closedEye = document.querySelector('.eye-closed');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                openEye.style.display = 'block';
+                closedEye.style.display = 'none';
+            } else {
+                passwordInput.type = 'password';
+                openEye.style.display = 'none';
+                closedEye.style.display = 'block';
+            }
+        }
+        
+        // Simple form submission handler (prevent default for demo purposes)
+        document.getElementById('signup-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            // In a real application, you would send data to the server here.
+            alertBox("Account creation attempted! Form is visually perfect.", "success");
+        });
+
+        // --- Custom Alert Box for a better UX than 'alert()' ---
+        function alertBox(message, type) {
+            let existingBox = document.getElementById('custom-alert-box');
+            if (existingBox) { existingBox.remove(); }
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.id = 'custom-alert-box';
+            alertDiv.textContent = message;
+            
+            // Apply basic styling
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 15px 30px;
+                border-radius: 8px;
+                color: white;
+                font-weight: bold;
+                z-index: 1000;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                background-color: ${type === 'success' ? 'var(--success-color)' : 'var(--primary-color)'};
+                animation: slideDown 0.3s ease-out;
+            `;
+
+            document.body.appendChild(alertDiv);
+
+            // Add CSS for animation (must be added via style tag or appended CSS text)
+            if (!document.getElementById('alert-style')) {
+                const style = document.createElement('style');
+                style.id = 'alert-style';
+                style.textContent = `@keyframes slideDown { from { top: -50px; opacity: 0; } to { top: 20px; opacity: 1; } }`;
+                document.head.appendChild(style);
+            }
+
+            // Automatically remove after 3 seconds
+            setTimeout(() => {
+                alertDiv.style.animation = 'slideUp 0.3s ease-in';
+                if (!document.getElementById('slideUp-keyframe')) {
+                    const style = document.createElement('style');
+                    style.id = 'slideUp-keyframe';
+                    style.textContent = `@keyframes slideUp { from { top: 20px; opacity: 1; } to { top: -50px; opacity: 0; } }`;
+                    document.head.appendChild(style);
+                }
+                setTimeout(() => alertDiv.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
