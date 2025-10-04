@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ExpensoMan - Expense Management</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<style>
+    :root {
+        --primary-color: #00aaff;
+        --solid-black: #111111;
+        --blob-color-1: #3b82f6;
+        --blob-color-2: #1d4ed8;
+        --card-bg-dark: rgba(255, 255, 255, 0.1);  
+        --card-border-dark: rgba(255, 255, 255, 0.2);
+    }
+    html {
+        background-color: var(--solid-black);
+    }
+    body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--solid-black);
+        color: #eee;
+        margin: 0;
+        min-height: 100vh;
+    }
+    #root {
+        width: 100%;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        box-sizing: border-box;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .blob {
+        position: absolute; border-radius: 50%;
+        filter: blur(100px); opacity: 0.5; z-index: 0;
+    }
+    .blob1 {
+        width: 450px; height: 450px; background: var(--blob-color-1); 
+        top: -100px; left: -100px; animation: move 20s infinite alternate;
+    }
+    .blob2 {
+        width: 350px; height: 350px; background: var(--blob-color-2); 
+        bottom: -80px; right: -80px; animation: move 25s infinite alternate-reverse;
+    }
+    @keyframes move {
+        from { transform: translate(0, 0) rotate(0deg); }
+        to { transform: translate(200px, 100px) rotate(360deg); }
+    }
+    
+    .view-container {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        animation: fadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px) scale(0.98); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .auth-wrapper { position: relative; z-index: 1; }
+    .signup-box {
+        background: var(--card-bg-dark);
+        backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+        border: 1px solid var(--card-border-dark);
+        padding: 40px; border-radius: 16px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        width: 100%; max-width: 420px; text-align: center;
+    }
+    .signup-box h2 {
+        border: none; padding-bottom: 0; margin-bottom: 10px;
+        color: #fff; font-size: 28px;
+        text-shadow: 0 0 8px rgba(0, 170, 255, 0.8), 0 0 15px rgba(0, 170, 255, 0.4);
+    }
+    .signup-box p { color: rgba(255, 255, 255, 0.8); margin-bottom: 30px; }
+    .auth-wrapper .input-group { position: relative; margin-bottom: 25px; text-align: left; }
+    .auth-wrapper input {
+        width: 100%; padding: 14px; border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 8px; background: transparent; color: #fff;
+        outline: none; transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .auth-wrapper input::placeholder { color: transparent; }
+    .auth-wrapper label {
+        position: absolute; top: 15px; left: 15px; color: rgba(255, 255, 255, 0.7);
+        pointer-events: none; transition: all 0.3s ease-out;
+    }
+    .auth-wrapper input:focus + label,
+    .auth-wrapper input:not(:placeholder-shown) + label {
+        top: -10px; left: 10px; transform: scale(0.85); background-color: var(--primary-color);
+        padding: 2px 8px; border-radius: 4px; color: #fff; font-weight: 600;
+    }
+    .auth-wrapper button[type="submit"] {
+        width: 100%; padding: 14px; background-color: #fff; color: var(--primary-color);
+        border: none; border-radius: 8px; font-size: 18px; font-weight: 700; cursor: pointer;
+        transition: all 0.2s ease-out; margin-top: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .login-link { color: rgba(255, 255, 255, 0.8); }
+    .login-link a { color: #fff; text-decoration: none; font-weight: 700; cursor: pointer; }
+    .login-link a:hover { text-decoration: underline; }
+
+    .role-selector { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 25px; }
+    .role-selector button { flex: 1; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.4); background: transparent; color: rgba(255, 255, 255, 0.7); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; }
+    .role-selector button.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); box-shadow: 0 0 10px rgba(0, 170, 255, 0.5); }
+    
+    .dashboard-wrapper { max-width: 1280px; width: 100%; margin: auto; position: relative; z-index: 1; background-color: rgb(13, 18, 26); }
+    h1 { margin: 0 0 8px; color: #66b2ff; font-weight: 700; text-align: center; }
+    h2, h3 { margin: 0 0 12px; color: #80d8ff; border-bottom: 1px solid #222; padding-bottom: 8px; }
+    .dashboard { display: grid; grid-template-columns: repeat(auto-fit,minmax(320px,1fr)); gap: 24px; }
+    .card { background-color: #222; padding: 16px 20px; border-radius: 12px; box-shadow: 0 0 8px #0008; }
+    ul { list-style: none; margin: 0; padding: 0; }
+    li { background: #333; margin-bottom: 12px; padding: 12px 16px; border-radius: 8px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+    button.approve-btn, button.reject-btn, button.logout-btn { margin-left: 12px; padding: 6px 16px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease; }
+    button.approve-btn { background-color: #28a745; color: white; }
+    button.reject-btn, button.logout-btn { background-color: #dc3545; color: white; }
+    .message { margin-top: 16px; text-align: center; padding: 12px 16px; border-radius: 8px; font-weight: 700; }
+    .message.error { background-color: #7a2424; color: #f9b8b8; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const INITIAL_USERS = [
+  {id: 1, name: "Admin User", role: "ADMIN", managerId: null, email: "admin@example.com", password: "password123"},
+  {id: 2, name: "Manager User", role: "MANAGER", managerId: null, email: "manager@example.com", password: "password123"},
+  {id: 3, name: "Employee User", role: "EMPLOYEE", managerId: 2, email: "employee@example.com", password: "password123"},
+];
+
+// --- AUTHENTICATION COMPONENTS ---
+function SignUpPage({ onSignUp, switchToLogin, error }) {
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [role, setRole] = useState('EMPLOYEE');
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSignUp({ name, email, password, confirmPassword, role });
+    };
+
+    return (
+        <div className="auth-wrapper">
+            <div className="blob blob1"></div><div className="blob blob2"></div>
+            <div className="signup-box">
+                <h2>Create Your Account</h2>
+                <form onSubmit={handleSubmit}>
+                    <div className="input-group"><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder=" " required /><label>Your Full Name</label></div>
+                    <div className="input-group"><input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder=" " required /><label>Your Email</label></div>
+                    <div className="input-group">
+                         <label style={{position:'static', marginBottom:'10px', background:'none', padding:0, transform:'none', color:'rgba(255,255,255,0.7)'}}>Select Your Role</label>
+                         <div className="role-selector">
+                            <button type="button" onClick={() => setRole('EMPLOYEE')} className={role === 'EMPLOYEE' ? 'active' : ''}>Employee</button>
+                            <button type="button" onClick={() => setRole('MANAGER')} className={role === 'MANAGER' ? 'active' : ''}>Manager</button>
+                            <button type="button" onClick={() => setRole('ADMIN')} className={role === 'ADMIN' ? 'active' : ''}>Admin</button>
+                         </div>
+                    </div>
+                    <div className="input-group"><input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder=" " required minLength="8" /><label>Password</label></div>
+                    <div className="input-group"><input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder=" " required /><label>Confirm Password</label></div>
+                    <button type="submit">Sign Up</button>
+                </form>
+                {error && <div className="message error">{error}</div>}
+                <div className="login-link">Already have an account? <a onClick={switchToLogin}>Log In</a></div>
+            </div>
+        </div>
+    );
+}
+
+function LoginPage({ onLogin, switchToSignUp, error }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const handleSubmit = (e) => { e.preventDefault(); onLogin(email, password); };
+
+  return (
+    <div className="auth-wrapper">
+        <div className="blob blob1"></div><div className="blob blob2"></div>
+        <div className="signup-box">
+            <h2>Welcome Back</h2>
+            <form onSubmit={handleSubmit}>
+                <div className="input-group"><input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder=" " required /><label>Your Email</label></div>
+                <div className="input-group"><input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder=" " required /><label>Your Password</label></div>
+                <button type="submit">Login</button>
+            </form>
+            {error && <div className="message error">{error}</div>}
+            <div className="login-link">Don't have an account? <a onClick={switchToSignUp}>Sign Up</a></div>
+        </div>
+    </div>
+  );
+}
+
+// --- EMPLOYEE DASHBOARD (renders the full vanilla JS app) ---
+function EmployeeDashboardPro() {
+    // The ENTIRE unmodified HTML and JS for the advanced tracker is placed here.
+    const dashboardHtml = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <title>Expense Tracker — Pro Futuristic (1000+ lines)</title>
+          <meta name="viewport" content="width=device-width,initial-scale=1" />
+          <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
+          <style>
+            :root { --bg-0: #0b1020; --bg-1: linear-gradient(135deg,#0b1220,#08101a); --card-bg: rgba(255,255,255,0.03); --glass-bg: rgba(255,255,255,0.04); --muted: rgba(255,255,255,0.6); --accent: #2ecc71; --accent-2: #4facfe; --danger: #ff6b6b; --success: #2ecc71; --shadow: 0 12px 40px rgba(2,6,23,0.55); --max-width: 1200px; --radius: 14px; --glass-border: rgba(255,255,255,0.04); --glass-border-dark: rgba(255,255,255,0.02); --glass-blur: 10px; }
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            html,body { height: 100%; }
+            body { font-family: "Poppins", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: var(--bg-1); color: #e8eef6; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; padding: 28px; transition: background 300ms ease, color 300ms ease; }
+            .container { max-width: var(--max-width); margin: 0 auto; display: grid; grid-template-columns: 1fr 380px; gap: 22px; align-items: start; position: relative; }
+            @media (max-width: 980px) { .container { grid-template-columns: 1fr; padding-bottom: 80px; } }
+            .header { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+            .brand { display:flex; gap:12px; align-items:center; }
+            .brand .logo { width: 48px; height:48px; border-radius:10px; background: linear-gradient(135deg,#1b3b5f,#3a6ea5); display:flex; align-items:center; justify-content:center; box-shadow: 0 6px 18px rgba(0,0,0,0.45), 0 0 30px rgba(74,144,226,0.06) inset; font-weight:700; color:#fff; }
+            .brand h1 { font-size: 1.2rem; letter-spacing: 0.4px; color: #f5f9ff; font-weight:700; }
+            .header .controls { display:flex; gap:10px; align-items:center; }
+            .btn { background: rgba(255,255,255,0.04); color: #fff; border: none; padding: 8px 12px; border-radius: 10px; cursor:pointer; font-weight:700; transition: transform .12s ease, background .12s ease, box-shadow .12s ease; box-shadow: 0 6px 18px rgba(2,6,23,0.45); }
+            .btn:active { transform: translateY(1px); }
+            .btn:hover { transform: translateY(-2px); }
+            .btn.primary { background: linear-gradient(90deg,var(--accent), var(--accent-2)); color: #042; box-shadow: 0 10px 30px rgba(46,204,113,0.08); }
+            .btn.ghost { background: transparent; border: 1px solid rgba(255,255,255,0.06); }
+            .toast-wrap { position: fixed; right: 18px; bottom: 18px; z-index: 1200; display:flex; flex-direction:column; gap:8px; }
+            .toast { background: rgba(0,0,0,0.6); color: #fff; padding:10px 14px; border-radius:10px; font-weight:600; min-width:180px; box-shadow: 0 8px 36px rgba(0,0,0,0.5); }
+            .card { background: var(--card-bg); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); border: 1px solid var(--glass-border); backdrop-filter: blur(var(--glass-blur)); transition: transform .14s ease, box-shadow .14s ease; }
+            .card:hover { transform: translateY(-6px); box-shadow: 0 18px 60px rgba(2,6,23,0.6); }
+            .form-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+            .input { padding:10px 12px; border-radius:10px; min-width:150px; border:1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.03); color: #eaf4ff; font-weight:500; }
+            .input:focus { outline: none; box-shadow: 0 6px 24px rgba(74,144,226,0.06); border-color: rgba(74,144,226,0.12); }
+            .label { font-size: 13px; color: var(--muted); margin-bottom:6px; display:block; }
+            .table-wrap { overflow:auto; border-radius:10px; margin-top:10px; }
+            table { width:100%; border-collapse:collapse; min-width:720px; color:#e9f6ff; }
+            thead th { padding:12px 14px; text-align:left; position: sticky; top: 0; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); font-weight:700; font-size:13px; color:#cfe9ff; }
+            tbody td { padding:12px 14px; border-top: 1px dashed rgba(255,255,255,0.03); font-size:14px; }
+            tbody tr:nth-child(even) { background: rgba(255,255,255,0.012); }
+            tbody tr:hover { background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.03)); }
+            .badge { padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px; color:#042; }
+            .badge.food { background:#ffd3d3; } .badge.travel { background:#cff3e1; } .badge.shopping { background:#dbe9ff; } .badge.bills { background:#ffe7c9; } .badge.other { background:#e6d9ff; }
+            .sidebar { display:flex; flex-direction:column; gap:14px; }
+            .total-box { text-align:center; padding:18px; border-radius:12px; }
+            .total-amount { font-size:22px; font-weight:800; color: var(--accent-2); }
+            .progress { width:100%; height:12px; background: rgba(255,255,255,0.03); border-radius:999px; overflow:hidden; }
+            .progress > i { display:block; height:100%; width:0%; background: linear-gradient(90deg, var(--accent), #a0f0e0); transition: width .6s ease; }
+            .charts { display:flex; flex-direction:column; gap:14px; }
+            .charts canvas { background: transparent; border-radius:8px; width:100% !important; height:230px !important; }
+            .pager { display:flex; gap:8px; align-items:center; justify-content:center; margin-top:12px; }
+            .page-btn { padding:8px 10px; border-radius:8px; border: none; background: rgba(255,255,255,0.03); color: #fff; cursor:pointer; }
+            .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: none; align-items:center; justify-content:center; z-index: 1400; }
+            .modal { background: linear-gradient(180deg,#051426,#09203f); padding: 18px; border-radius:12px; min-width:320px; max-width:600px; border:1px solid rgba(255,255,255,0.04); box-shadow: 0 18px 60px rgba(0,0,0,0.6); }
+            .muted { color: rgba(255,255,255,0.55); font-size:13px; }
+          <\/style>
+        <\/head>
+        <body>
+          <div class="toast-wrap" id="toasts"><\/div>
+          <div class="container">
+            <div class="header">
+              <div class="brand">
+                <div class="logo">ET<\/div>
+                <div><h1>Expense Tracker — Pro<\/h1><div class="muted" style="font-size:12px">Futuristic dashboard • Offline-capable • Export / Import<\/div><\/div>
+              <\/div>
+              <div class="controls">
+                <button class="btn ghost" id="importBtn">📥 Import CSV<\/button><input type="file" id="csvFile" accept=".csv" style="display:none" /> 
+                <button class="btn ghost" id="exportCSVBtn">📤 Export CSV<\/button>
+                <button class="btn ghost" id="exportJSONBtn">📤 Export JSON<\/button>
+                <button class="btn ghost" id="exportPDFBtn">🖨 Export PDF<\/button>
+                <button class="btn" id="themeToggle">🌗 Theme<\/button>
+              <\/div>
+            <\/div>
+            <main class="card" style="min-height:100px;">
+              <section>
+                <form id="expenseForm" aria-label="Add expense form">
+                  <div style="display:flex; gap:18px; flex-wrap:wrap; align-items:center;">
+                    <div style="flex:1; min-width:160px;"><label class="label">Name<\/label><input id="name" class="input" placeholder="e.g., Coffee at office" required \/><\/div>
+                    <div style="width:140px;"><label class="label">Amount<\/label><input id="amount" class="input" type="number" step="0.01" placeholder="₹" required \/><\/div>
+                    <div style="width:170px;"><label class="label">Category<\/label><input id="category" class="input" placeholder="Food, Travel, Bills..." required \/><\/div>
+                    <div style="width:170px;"><label class="label">Date<\/label><input id="date" class="input" type="date" required \/><\/div>
+                    <div style="display:flex; gap:8px; align-items:center;"><button class="btn primary" id="addBtn" type="submit">➕ Add<\/button><\/div>
+                  <\/div>
+                <\/form>
+              <\/section>
+              <section style="margin-top:18px;">
+                <div class="table-wrap">
+                  <table role="table"><thead><tr><th data-sort="name">Name ⬍<\/th><th data-sort="amount">Amount ⬍<\/th><th data-sort="category">Category ⬍<\/th><th data-sort="date">Date ⬍<\/th><th>Actions<\/th><\/tr><\/thead><tbody id="expensesTable"><\/tbody><\/table>
+                <\/div>
+                <div class="pager" id="pager"><\/div>
+              <\/section>
+            <\/main>
+            <aside class="sidebar">
+              <div class="card total-box"><div class="small">Total Spent (All time)<\/div><div class="total-amount" id="totalAmount">₹0<\/div><\/div>
+              <div class="card budget-wrap">
+                <div style="display:flex; justify-content:space-between; align-items:center;"><strong>Monthly Budget<\/strong><div class="small muted" id="budgetMonthLabel"><\/div><\/div>
+                <div style="display:flex; gap:8px; margin-top:8px;"><input id="budgetInput" class="input" placeholder="₹ Monthly budget" type="number" style="flex:1" /><button id="setBudgetBtn" class="btn primary">Set<\/button><\/div>
+                <div style="margin-top:12px;"><div class="progress" aria-hidden="true"><i id="budgetProgressBar" style="width:0%;"><\/i><\/div><div style="display:flex; justify-content:space-between; margin-top:8px;"><div class="small">Spent: <strong id="budgetSpent">₹0<\/strong><\/div><div class="small">Budget: <strong id="budgetValue">₹0<\/strong><\/div><\/div><\/div>
+              <\/div>
+              <div class="card charts">
+                <strong>Expense Insights<\/strong>
+                <canvas id="categoryChart"><\/canvas><canvas id="monthlyChart"><\/canvas>
+              <\/div>
+            <\/aside>
+          <\/div> 
+          <div class="modal-backdrop" id="modalBackdrop"><div class="modal"><p style="font-weight:700; margin-bottom:8px;">Confirm delete<\/p><p class="muted" id="modalText">Are you sure?<\/p><div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;"><button class="btn" id="cancelModal">Cancel<\/button><button class="btn primary" id="confirmModal">Delete<\/button><\/div><\/div><\/div>
+          <div id="pdfCapture" style="position:fixed; left:-9999px; top:-9999px; width:800px;"><\/div>
+          <script>
+            const PAGE_SIZE = 8; const STORAGE_KEY = 'et_pro_expenses_v1'; const BUDGET_KEY = 'et_pro_budget_v1';
+            let expenses = []; let page = 1; let currentSort = { key: null, asc: true }; let categoryChart, monthlyChart;
+            const uid = () => 'id_' + Math.random().toString(36).slice(2, 9);
+            const formatCurrency = v => '₹' + Number(v).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const toast = (msg, ms = 2500) => { const el = document.createElement('div'); el.className = 'toast'; el.innerText = msg; document.getElementById('toasts').appendChild(el); setTimeout(() => el.remove(), ms); };
+            const saveLocal = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+            const loadLocal = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const escapeHtml = s => String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+            const renderTable = () => {
+                let filtered = [...expenses];
+                if (currentSort.key) {
+                    const k = currentSort.key;
+                    filtered.sort((a,b) => {
+                        if (a[k] > b[k]) return currentSort.asc ? 1 : -1;
+                        if (a[k] < b[k]) return currentSort.asc ? -1 : 1;
+                        return 0;
+                    });
+                }
+                const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+                if (page > totalPages) page = totalPages;
+                const pageItems = filtered.slice((page - 1) * PAGE_SIZE, (page - 1) * PAGE_SIZE + PAGE_SIZE);
+                document.getElementById('expensesTable').innerHTML = pageItems.map(exp => \`<tr><td>\${escapeHtml(exp.name)}<\/td><td>\${formatCurrency(exp.amount)}<\/td><td>\${escapeHtml(exp.category)}<\/td><td>\${escapeHtml(exp.date)}<\/td><td><button class="btn ghost" onclick="promptDelete('\${exp.id}')">🗑️<\/button><\/td><\/tr>\`).join('');
+                renderPager(totalPages);
+            };
+            const renderPager = totalPages => {
+                const pager = document.getElementById('pager'); pager.innerHTML = ''; if (totalPages <= 1) return;
+                if (page > 1) { const prev = document.createElement('button'); prev.className='page-btn'; prev.innerText='‹'; prev.onclick=() => { page--; renderTable(); }; pager.appendChild(prev); }
+                for (let i = 1; i <= totalPages; i++) { const b = document.createElement('button'); b.className='page-btn'; b.style.fontWeight = i === page ? 700:400; b.innerText=i; b.onclick=() => { page=i; renderTable(); }; pager.appendChild(b); }
+                if (page < totalPages) { const next = document.createElement('button'); next.className='page-btn'; next.innerText='›'; next.onclick=() => { page++; renderTable(); }; pager.appendChild(next); }
+            };
+            const updateCharts = () => {
+                const catTotals = expenses.reduce((acc, e) => { acc[e.category] = (acc[e.category] || 0) + e.amount; return acc; }, {});
+                const monthTotals = expenses.reduce((acc, e) => { const month = e.date.slice(0,7); acc[month] = (acc[month] || 0) + e.amount; return acc; }, {});
+                if (categoryChart) categoryChart.destroy();
+                categoryChart = new Chart(document.getElementById('categoryChart'), { type: 'doughnut', data: { labels: Object.keys(catTotals), datasets: [{ data: Object.values(catTotals), backgroundColor: ['#3498db','#2ecc71','#f1c40f','#e74c3c','#9b59b6'] }] }, options: { plugins: { legend: { display: false } } }});
+                if (monthlyChart) monthlyChart.destroy();
+                monthlyChart = new Chart(document.getElementById('monthlyChart'), { type: 'bar', data: { labels: Object.keys(monthTotals).sort(), datasets: [{ label: 'Spending', data: Object.values(monthTotals), backgroundColor: '#4facfe' }] }, options: { plugins: { legend: { display: false } } }});
+            };
+            const updateTotalsAndBudget = () => {
+                const total = expenses.reduce((s, e) => s + e.amount, 0);
+                document.getElementById('totalAmount').innerText = formatCurrency(total);
+                const monthlyTotal = expenses.filter(e => e.date.startsWith(new Date().toISOString().slice(0,7))).reduce((s, e) => s + e.amount, 0);
+                const budget = Number(localStorage.getItem(BUDGET_KEY) || 0);
+                document.getElementById('budgetSpent').innerText = formatCurrency(monthlyTotal); document.getElementById('budgetValue').innerText = formatCurrency(budget);
+                document.getElementById('budgetProgressBar').style.width = budget > 0 ? \`\${Math.min(100, (monthlyTotal/budget)*100)}%\` : '0%';
+            };
+            const refreshAll = () => { renderTable(); updateCharts(); updateTotalsAndBudget(); };
+            window.promptDelete = id => {
+                const modal = document.getElementById('modalBackdrop'); modal.style.display='flex';
+                document.getElementById('confirmModal').onclick = () => { expenses = expenses.filter(e => e.id !== id); saveLocal(); refreshAll(); modal.style.display='none'; toast('Deleted!'); };
+                document.getElementById('cancelModal').onclick = () => { modal.style.display='none'; };
+            };
+            document.getElementById('expenseForm').addEventListener('submit', e => {
+                e.preventDefault();
+                expenses.push({ id: uid(), name: e.target.name.value, amount: parseFloat(e.target.amount.value), category: e.target.category.value, date: e.target.date.value });
+                saveLocal(); refreshAll(); e.target.reset(); document.getElementById('date').value = new Date().toISOString().slice(0,10); toast('Added!');
+            });
+            document.getElementById('setBudgetBtn').addEventListener('click', () => { localStorage.setItem(BUDGET_KEY, document.getElementById('budgetInput').value); updateTotalsAndBudget(); toast('Budget set!'); });
+            document.querySelectorAll('th[data-sort]').forEach(th => th.onclick=() => { const k=th.dataset.sort; currentSort.asc = currentSort.key === k ? !currentSort.asc : true; currentSort.key = k; renderTable(); });
+            document.getElementById('exportCSVBtn').addEventListener('click', () => { const csv = ['name,amount,category,date', ...expenses.map(e => \`"\${e.name}","\${e.amount}","\${e.category}","\${e.date}"\`)].join('\\n'); const blob = new Blob([csv], {type: 'text/csv'}); const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='expenses.csv'; a.click(); });
+            (function init() { expenses = loadLocal(); document.getElementById('date').value = new Date().toISOString().slice(0,10); document.getElementById('budgetInput').value = localStorage.getItem(BUDGET_KEY) || ''; refreshAll(); })();
+          <\/script>
+        <\/body>
+        <\/html>
+    `;
+
+    return (
+        <iframe 
+            srcDoc={dashboardHtml}
+            style={{ width: '100%', height: 'calc(100vh - 80px)', border: 'none', borderRadius: '12px' }}
+            title="Advanced Employee Dashboard"
+        />
+    );
+}
+
+// --- DASHBOARD WRAPPER COMPONENT ---
+function Dashboard({ loggedInUser, onLogout, allUsers }) {
+    return (
+        <div className="dashboard-wrapper">
+            <div style={{ textAlign: "center", marginBottom: "24px" }}>
+                <h1>ExpensoMan</h1>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 10px'}}>
+                    <p>Welcome, <strong>{loggedInUser.name}</strong> ({loggedInUser.role})</p>
+                    <button onClick={onLogout} className="logout-btn" style={{margin: 0}}>Logout</button>
+                </div>
+            </div>
+            {loggedInUser.role === 'EMPLOYEE' ? (
+                <EmployeeDashboardPro />
+            ) : (
+                <ManagerAdminDashboard loggedInUser={loggedInUser} allUsers={allUsers} />
+            )}
+        </div>
+    );
+}
+
+// --- MANAGER/ADMIN DASHBOARD ---
+function ManagerAdminDashboard({ loggedInUser, allUsers }) {
+    const [expenses, setExpenses] = useState([]);
+    
+    // Mock data for demonstration
+    useEffect(() => {
+        if(loggedInUser.role === 'MANAGER') {
+            setExpenses([
+                { id: 101, employeeId: 3, amount: 500, category: 'Travel', description: 'Client Meeting Cab', date: '2025-10-03', status: 'PENDING' },
+                { id: 102, employeeId: 3, amount: 1250, category: 'Food', description: 'Team Lunch', date: '2025-10-04', status: 'PENDING' }
+            ]);
+        }
+    }, [loggedInUser]);
+
+    const getUserById = (id) => allUsers.find(u => u.id === id);
+    const approvalQueue = expenses.filter(exp => exp.status === "PENDING" && (
+        (loggedInUser.role === 'MANAGER' && getUserById(exp.employeeId)?.managerId === loggedInUser.id) ||
+        (loggedInUser.role === 'ADMIN')
+    ));
+
+    function handleApproval(expenseId, approved) {
+        setExpenses(exps => exps.map(exp => exp.id === expenseId ? { ...exp, status: approved ? "APPROVED" : "REJECTED" } : exp));
+    }
+
+    return (
+        <div className="dashboard">
+            <div className="card">
+                <h2>Approval Queue</h2>
+                {approvalQueue.length > 0 ? (
+                    <ul>
+                        {approvalQueue.map(exp => (
+                            <li key={exp.id}>
+                                <span>{getUserById(exp.employeeId)?.name}: {exp.description} for ₹{exp.amount}</span>
+                                <div>
+                                    <button className="approve-btn" onClick={() => handleApproval(exp.id, true)}>Approve</button>
+                                    <button className="reject-btn" onClick={() => handleApproval(exp.id, false)}>Reject</button>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                ) : <p>No expenses to approve.</p>}
+            </div>
+        </div>
+    );
+}
+
+// --- MAIN APP CONTROLLER ---
+function App() {
+  const [view, setView] = useState('signup');
+  const [loggedInUser, setLoggedInUser] = useState(null);
+  const [users, setUsers] = useState(INITIAL_USERS);
+  const [error, setError] = useState('');
+
+  const handleSignUp = (newUser) => {
+    if (newUser.password !== newUser.confirmPassword) { setError("Passwords do not match."); return; }
+    if (users.find(u => u.email === newUser.email)) { setError("An account with this email already exists."); return; }
+    
+    const userToSave = {
+        id: Date.now(), name: newUser.name, email: newUser.email, password: newUser.password,
+        role: newUser.role, managerId: newUser.role === 'EMPLOYEE' ? 2 : null,
+    };
+    setUsers(currentUsers => [...currentUsers, userToSave]);
+    setError(''); setView('login');
+  };
+
+  const handleLogin = (email, password) => {
+    const user = users.find(u => u.email === email && u.password === password);
+    if (user) {
+      setLoggedInUser(user); setError(''); setView('dashboard');
+    } else {
+      setError('Invalid credentials.');
+    }
+  };
+
+  const handleLogout = () => {
+    setLoggedInUser(null); setView('login');
+  };
+  
+  const renderView = () => {
+      switch(view) {
+          case 'dashboard': return <Dashboard loggedInUser={loggedInUser} onLogout={handleLogout} allUsers={users} />;
+          case 'login': return <LoginPage onLogin={handleLogin} switchToSignUp={() => { setView('signup'); setError(''); }} error={error} />;
+          case 'signup': default: return <SignUpPage onSignUp={handleSignUp} switchToLogin={() => { setView('login'); setError(''); }} error={error} />;
+      }
+  };
+
+  return (
+    <div key={view} className="view-container">
+        {renderView()}
+    </div>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById('root'));
+</script>
+</body>
+</html>
+now when an empolyee login and see the expense and add his expense then he can sned the request to the manager so that manger can approve it now add this functionality 
+now in manager side we can see who has send the request and then we can approve it and reject it also 
+now in admin side we can add other admin or manger also 
+and do not change anything else
