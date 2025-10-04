@@ -1,53 +1,48 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from .database import Base, engine
-from .routers import auth_router, users_router, expenses_router, approvals_router, admin_router, currency_router
-from .services.analytics import generate_analytics
-import logging
+from fastapi.responses import FileResponse
+from .database import engine, Base
+from .routers import auth, expenses, approvals, users
+import os
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Create DB tables
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="Expense Management System",
-    description="Backend API for Expense Management with multi-level approvals and AI insights",
-    version="1.0.0",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc"
+    title="ExpensoMan API",
+    description="Backend for the Expense Management System.",
+    version="1.0.0"
 )
 
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Restrict to specific origins in production
+    allow_origins=["https://stellular-cactus-2a9ff5.netlify.app/"],  # TODO: restrict in prod
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Routers
+app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+app.include_router(users.router, prefix="/users", tags=["Users"])
+app.include_router(expenses.router, prefix="/expenses", tags=["Expenses"])
+app.include_router(approvals.router, prefix="/approvals", tags=["Approvals"])
 
-@app.on_event("startup")
-async def startup_event():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    logger.info("Database tables created successfully")
+# Static frontend serving
+static_file_path = os.path.join(os.path.dirname(__file__), "..", "static")
+app.mount("/static", StaticFiles(directory=static_file_path), name="static")
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    logger.info("Application shutting down")
+# Root → index.html
+@app.get("/", response_class=FileResponse, tags=["Root"])
+async def read_index():
+    return FileResponse(os.path.join(static_file_path, "index.html"))
 
-@app.get("/analytics", dependencies=[Depends(deps.is_admin)])
-async def get_analytics():
-    return await generate_analytics()
-
-app.include_router(auth_router.router, prefix="/auth", tags=["Auth"])
-app.include_router(users_router.router, prefix="/users", tags=["Users"])
-app.include_router(expenses_router.router, prefix="/expenses", tags=["Expenses"])
-app.include_router(approvals_router.router, prefix="/approvals", tags=["Approvals"])
-app.include_router(admin_router.router, prefix="/admin", tags=["Admin"])
-app.include_router(currency_router.router, prefix="/currency", tags=["Currency"])
-
-@app.get("/")
-async def root():
-    return {"message": "Welcome to the Expense Management System. Visit /static/index.html", "time": utils.get_current_datetime().isoformat()}
+# Catch-all → index.html (for React Router)
+@app.get("/{full_path:path}", response_class=FileResponse, tags=["Root"])
+async def catch_all(full_path: str, request: Request):
+    index_path = os.path.join(static_file_path, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {"error": "Not found"}
