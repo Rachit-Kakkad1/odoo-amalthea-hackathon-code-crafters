@@ -1,35 +1,55 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from app.database import Base, engine
-from app.routers import auth_router, users_router, expenses_router, approvals_router, admin_router
+from .database import Base, engine
+from .routers import auth_router, users_router, expenses_router, approvals_router, admin_router, currency_router
+from .services.analytics import generate_analytics
+from sqlalchemy.ext.asyncio import AsyncEngine
+import logging
 
-# Create all database tables
-Base.metadata.create_all(bind=engine)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# FastAPI app instance
 app = FastAPI(
     title="Expense Management System",
-    description="Backend API for Expense Management with multi-level approvals",
-    version="1.0.0"
+    description="Backend API for Expense Management with multi-level approvals and AI insights",
+    version="1.0.0",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc"
 )
 
-# Allow CORS (frontend can call APIs)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # TODO: restrict in production
+    allow_origins=["*"],  # TODO: Restrict in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include Routers
+@app.on_event("startup")
+async def startup_event() -> None:
+    """Create all database tables on application startup."""
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    logger.info("Database tables created successfully")
+
+@app.on_event("shutdown")
+async def shutdown_event() -> None:
+    """Cleanup on shutdown."""
+    logger.info("Application shutting down")
+
+@app.get("/analytics", dependencies=[Depends(deps.is_admin)])
+async def get_analytics():
+    """Real-time analytics for admin."""
+    return await generate_analytics()
+
 app.include_router(auth_router.router, prefix="/auth", tags=["Auth"])
 app.include_router(users_router.router, prefix="/users", tags=["Users"])
 app.include_router(expenses_router.router, prefix="/expenses", tags=["Expenses"])
 app.include_router(approvals_router.router, prefix="/approvals", tags=["Approvals"])
 app.include_router(admin_router.router, prefix="/admin", tags=["Admin"])
+app.include_router(currency_router.router, prefix="/currency", tags=["Currency"])
 
-# Root endpoint
 @app.get("/")
-def root():
-    return {"message": "Welcome to the Expense Management System API"}
+def root() -> dict:
+    """Return a welcome message for the root endpoint."""
+    return {"message": "Welcome to the Expense Management System API", "time": utils.get_current_datetime().isoformat()}
