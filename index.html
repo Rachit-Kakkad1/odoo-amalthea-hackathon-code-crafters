@@ -3,162 +3,169 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ExpensoMan - Login</title>
+<title>ExpensoMan - Expense Management</title>
 <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <style>
-  body {
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    background-color: rgb(13, 18, 26);
-    color: #eee;
-    margin: 0;
-    padding: 16px;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  #root {
-    width: 100%;
-    max-width: 960px;
-    margin: auto;
-  }
-  h1 {
-    margin: 0 0 8px;
-    color: #66b2ff;
-    font-weight: 700;
-    text-align: center;
-  }
-  h2, h3 {
-    margin: 0 0 12px;
-    color: #80d8ff;
-    border-bottom: 1px solid #222;
-    padding-bottom: 8px;
-  }
-  .dashboard {
-    display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(320px,1fr));
-    gap: 24px;
-  }
-  .card {
-    background-color: #222;
-    padding: 16px 20px;
-    border-radius: 12px;
-    box-shadow: 0 0 8px #0008;
-  }
-  ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  li {
-    background: #333;
-    margin-bottom: 12px;
-    padding: 12px 16px;
-    border-radius: 8px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .expense-desc {
-    flex: 1 1 60%;
-    font-weight: 600;
-    word-break: break-word;
-  }
-  .expense-details {
-    flex: 1 1 40%;
-    text-align: right;
-  }
-  .expense-status {
-    font-weight: 700;
-    padding: 4px 12px;
-    border-radius: 9999px;
-    text-transform: uppercase;
-    user-select: none;
-  }
-  .status-PENDING { background-color: #d6a600; color: #222; }
-  .status-APPROVED { background-color: #28a745; color: white; }
-  .status-REJECTED { background-color: #dc3545; color: white; }
-  button.approve-btn, button.reject-btn {
-    margin-left: 12px;
-    padding: 6px 16px;
-    font-weight: 600;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  button.approve-btn { background-color: #28a745; color: white; }
-  button.approve-btn:hover { background-color: #218838; }
-  button.reject-btn { background-color: #dc3545; color: white; }
-  button.reject-btn:hover { background-color: #a71d2a; }
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  input, select {
-    padding: 10px 14px;
-    font-size: 1em;
-    border-radius: 6px;
-    border: 1px solid #555;
-    background-color: #222;
-    color: #eee;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  }
-  input:focus, select:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
-  }
-  button.submit-btn {
-    background: linear-gradient(45deg, #007bff, #0056b3);
-    color: white;
-    font-size: 1.1em;
-    font-weight: 700;
-    cursor: pointer;
-    border: none;
-    padding-top: 12px;
-    padding-bottom: 12px;
-    transition: all 0.2s ease-in-out;
-  }
-  button.submit-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
-  }
-  .message {
-    margin-top: 16px;
-    text-align: center;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-weight: 700;
-  }
-  .message.success { background-color: #206a49; color: #b6eebb; }
-  .message.error { background-color: #7a2424; color: #f9b8b8; }
-  label {
-    font-weight: 600;
-    margin-bottom: -10px;
-  }
-  .comment-input { resize: vertical; min-height: 40px; }
+    :root {
+        --primary-color: #00aaff;
+        --solid-black: #111111;
+        --blob-color-1: #3b82f6;
+        --blob-color-2: #1d4ed8;
+        --card-bg-dark: rgba(255, 255, 255, 0.1);  
+        --card-border-dark: rgba(255, 255, 255, 0.2);
+    }
 
-  /* --- NEW LOGIN PAGE STYLES --- */
-  .login-container {
-    max-width: 400px;
-    margin: auto;
-    padding: 24px 32px;
-    background-color: #1e1e1e;
-    border-radius: 12px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-    border: 1px solid #333;
-  }
-  .login-container h2 {
-    text-align: center;
-    color: #80d8ff;
-    border: none;
-  }
+    body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--solid-black);
+        color: #eee;
+        margin: 0;
+        min-height: 100vh;
+    }
+    #root {
+        width: 100%;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        box-sizing: border-box;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .blob {
+        position: absolute; border-radius: 50%;
+        filter: blur(100px); opacity: 0.5; z-index: 0;
+    }
+    .blob1 {
+        width: 450px; height: 450px; background: var(--blob-color-1); 
+        top: -100px; left: -100px; animation: move 20s infinite alternate;
+    }
+    .blob2 {
+        width: 350px; height: 350px; background: var(--blob-color-2); 
+        bottom: -80px; right: -80px; animation: move 25s infinite alternate-reverse;
+    }
+    @keyframes move {
+        from { transform: translate(0, 0) rotate(0deg); }
+        to { transform: translate(200px, 100px) rotate(360deg); }
+    }
+    
+    /* --- NEW FEATURE: Page Transition Animation --- */
+    .view-container {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        animation: fadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px) scale(0.98); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* --- Auth Page (Login/Sign Up) Styles --- */
+    .auth-wrapper {
+        position: relative; z-index: 1;
+    }
+    .signup-box {
+        background: var(--card-bg-dark);
+        backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+        border: 1px solid var(--card-border-dark);
+        padding: 40px; border-radius: 16px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        width: 100%; max-width: 420px; text-align: center;
+    }
+    .signup-box h2 {
+        border: none; padding-bottom: 0; margin-bottom: 10px;
+        color: #fff; font-size: 28px;
+        text-shadow: 0 0 8px rgba(0, 170, 255, 0.8), 0 0 15px rgba(0, 170, 255, 0.4);
+    }
+    .signup-box p { color: rgba(255, 255, 255, 0.8); margin-bottom: 30px; }
+    .auth-wrapper .input-group { position: relative; margin-bottom: 25px; text-align: left; }
+    .auth-wrapper input {
+        width: 100%; padding: 14px; border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 8px; background: transparent; color: #fff;
+        outline: none; transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .auth-wrapper input::placeholder { color: transparent; }
+    .auth-wrapper label {
+        position: absolute; top: 15px; left: 15px; color: rgba(255, 255, 255, 0.7);
+        pointer-events: none; transition: all 0.3s ease-out;
+    }
+    .auth-wrapper input:focus + label,
+    .auth-wrapper input:not(:placeholder-shown) + label {
+        top: -10px; left: 10px; transform: scale(0.85); background-color: var(--primary-color);
+        padding: 2px 8px; border-radius: 4px; color: #fff; font-weight: 600;
+    }
+    .auth-wrapper button[type="submit"] {
+        width: 100%; padding: 14px; background-color: #fff; color: var(--primary-color);
+        border: none; border-radius: 8px; font-size: 18px; font-weight: 700; cursor: pointer;
+        transition: all 0.2s ease-out; margin-top: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .auth-wrapper button[type="submit"]:hover {
+        transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    }
+    .login-link { color: rgba(255, 255, 255, 0.8); }
+    .login-link a { color: #fff; text-decoration: none; font-weight: 700; cursor: pointer; }
+    .login-link a:hover { text-decoration: underline; }
+
+    /* --- NEW FEATURE: Role Selector Styles --- */
+    .role-selector {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 25px;
+    }
+    .role-selector button {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        background: transparent;
+        color: rgba(255, 255, 255, 0.7);
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    .role-selector button:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+    .role-selector button.active {
+        background: var(--primary-color);
+        color: #fff;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 10px rgba(0, 170, 255, 0.5);
+    }
+    
+    /* --- Dashboard Styles --- */
+    .dashboard-container { max-width: 960px; width: 100%; margin: auto; position: relative; z-index: 1; background-color: rgb(13, 18, 26); }
+    h1 { margin: 0 0 8px; color: #66b2ff; font-weight: 700; text-align: center; }
+    h2, h3 { margin: 0 0 12px; color: #80d8ff; border-bottom: 1px solid #222; padding-bottom: 8px; }
+    .dashboard { display: grid; grid-template-columns: repeat(auto-fit,minmax(320px,1fr)); gap: 24px; }
+    .card { background-color: #222; padding: 16px 20px; border-radius: 12px; box-shadow: 0 0 8px #0008; }
+    ul { list-style: none; margin: 0; padding: 0; }
+    li { background: #333; margin-bottom: 12px; padding: 12px 16px; border-radius: 8px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+    .expense-desc { flex: 1 1 60%; font-weight: 600; }
+    .expense-details { flex: 1 1 40%; text-align: right; }
+    .expense-status { font-weight: 700; padding: 4px 12px; border-radius: 9999px; text-transform: uppercase; user-select: none; }
+    .status-PENDING { background-color: #d6a600; color: #222; }
+    .status-APPROVED { background-color: #28a745; color: white; }
+    .status-REJECTED { background-color: #dc3545; color: white; }
+    button.approve-btn, button.reject-btn, button.logout-btn { margin-left: 12px; padding: 6px 16px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease; }
+    button.approve-btn { background-color: #28a745; color: white; }
+    button.approve-btn:hover { background-color: #218838; }
+    button.reject-btn, button.logout-btn { background-color: #dc3545; color: white; }
+    button.reject-btn:hover, button.logout-btn:hover { background-color: #a71d2a; }
+    .dashboard-container form { display: flex; flex-direction: column; gap: 16px; }
+    .dashboard-container input, .dashboard-container select { padding: 10px 14px; font-size: 1em; border-radius: 6px; border: 1px solid #555; background-color: #222; color: #eee; }
+    button.submit-btn { background: linear-gradient(45deg, #007bff, #0056b3); color: white; font-size: 1.1em; font-weight: 700; cursor: pointer; border: none; padding: 12px; }
+    .message { margin-top: 16px; text-align: center; padding: 12px 16px; border-radius: 8px; font-weight: 700; }
+    .message.success { background-color: #206a49; color: #b6eebb; }
+    .message.error { background-color: #7a2424; color: #f9b8b8; }
 </style>
 </head>
 <body>
@@ -167,272 +174,248 @@
 <script type="text/babel">
 const { useState } = React;
 
-// --- MODIFICATION: Added 'email' and 'password' to user data for login ---
-const USERS = [
-  {id: 1, name: "Admin User", role: "ADMIN", managerId: null, email: "admin@expensoman.com", password: "password"},
-  {id: 2, name: "Manager User", role: "MANAGER", managerId: null, email: "manager@expensoman.com", password: "password"},
-  {id: 3, name: "Employee User", role: "EMPLOYEE", managerId: 2, email: "employee@expensoman.com", password: "password"},
+const INITIAL_USERS = [
+  {id: 1, name: "Admin User", role: "ADMIN", managerId: null, email: "admin@example.com", password: "password123"},
+  {id: 2, name: "Manager User", role: "MANAGER", managerId: null, email: "manager@example.com", password: "password123"},
 ];
 
-const APPROVAL_SEQUENCE = [
-  {role: "MANAGER", label: "Manager Approval", isManagerApprover: true},
-  {role: "FINANCE", label: "Finance Approval"},
-  {role: "DIRECTOR", label: "Director Approval"}
-];
+const APPROVAL_SEQUENCE = [{role: "MANAGER", label: "Manager Approval"},{role: "FINANCE", label: "Finance Approval"},];
 
-// --- MODIFICATION 1: LOGIN PAGE COMPONENT ---
-// This component handles the UI and state for the login form.
-function LoginPage({ onLogin, error }) {
+// --- COMPONENT 1: SIGN UP PAGE ---
+function SignUpPage({ onSignUp, switchToLogin, error }) {
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    // --- NEW FEATURE: State for selected role ---
+    const [role, setRole] = useState('EMPLOYEE');
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSignUp({ name, email, password, confirmPassword, role });
+    };
+
+    return (
+        <div className="auth-wrapper">
+            <div className="blob blob1"></div>
+            <div className="blob blob2"></div>
+            <div className="signup-box">
+                <h2>Create Your Account</h2>
+                <p>Join ExpensoMan to manage your finances.</p>
+                <form onSubmit={handleSubmit}>
+                    <div className="input-group">
+                        <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder=" " required />
+                        <label>Your Full Name</label>
+                    </div>
+                    <div className="input-group">
+                        <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder=" " required />
+                        <label>Your Email</label>
+                    </div>
+                     {/* --- NEW FEATURE: Role Selector Buttons --- */}
+                    <div className="input-group">
+                         <label style={{position:'static', marginBottom:'10px', background:'none', padding:0, transform:'none', color:'rgba(255,255,255,0.7)'}}>Select Your Role</label>
+                         <div className="role-selector">
+                            <button type="button" onClick={() => setRole('EMPLOYEE')} className={role === 'EMPLOYEE' ? 'active' : ''}>Employee</button>
+                            <button type="button" onClick={() => setRole('MANAGER')} className={role === 'MANAGER' ? 'active' : ''}>Manager</button>
+                            <button type="button" onClick={() => setRole('ADMIN')} className={role === 'ADMIN' ? 'active' : ''}>Admin</button>
+                         </div>
+                    </div>
+                    <div className="input-group">
+                        <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder=" " required minLength="8" />
+                        <label>Password</label>
+                    </div>
+                    <div className="input-group">
+                        <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder=" " required />
+                        <label>Confirm Password</label>
+                    </div>
+                    <button type="submit">Sign Up</button>
+                </form>
+                {error && <div className="message error">{error}</div>}
+                <div className="login-link">
+                    Already have an account? <a onClick={switchToLogin}>Log In</a>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// --- COMPONENT 2: LOGIN PAGE (Unchanged) ---
+function LoginPage({ onLogin, switchToSignUp, error }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const handleSubmit = (e) => { e.preventDefault(); onLogin(email, password); };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onLogin(email, password);
+  return (
+    <div className="auth-wrapper">
+        <div className="blob blob1"></div>
+        <div className="blob blob2"></div>
+        <div className="signup-box">
+            <h2>Welcome Back</h2>
+            <p>Enter your credentials to access the dashboard.</p>
+            <form onSubmit={handleSubmit}>
+                <div className="input-group">
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder=" " required />
+                    <label>Your Email</label>
+                </div>
+                <div className="input-group">
+                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder=" " required />
+                    <label>Your Password</label>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+            {error && <div className="message error">{error}</div>}
+            <div className="login-link">
+                Don't have an account? <a onClick={switchToSignUp}>Sign Up</a>
+            </div>
+        </div>
+    </div>
+  );
+}
+
+// --- COMPONENT 3: DASHBOARD (Unchanged) ---
+function Dashboard({ loggedInUser, onLogout, allUsers }) {
+    const [expenses, setExpenses] = useState([]);
+    const [message, setMessage] = useState(null);
+  
+    const currentUser = loggedInUser;
+    const getUserById = (id) => allUsers.find(u => u.id === id);
+    const myExpenses = expenses.filter(e => e.employeeId === currentUser.id);
+    const approvalQueue = (currentUser.role === "MANAGER" || currentUser.role === "ADMIN") 
+        ? expenses.filter(exp => exp.status === "PENDING" && getUserById(exp.employeeId)?.managerId === currentUser.id)
+        : [];
+    
+    function submitExpense(e) {
+        e.preventDefault();
+        const form = e.target;
+        const newExpense = {
+            id: Date.now(), employeeId: currentUser.id,
+            amount: parseFloat(form.amount.value), category: form.category.value,
+            description: form.description.value, date: form.date.value,
+            status: "PENDING",
+        };
+        setExpenses(exps => [newExpense, ...exps]);
+        form.reset();
+        setMessage({ type: "success", text: "Expense submitted." });
+    }
+
+    function handleApproval(expenseId, approved) {
+        setExpenses(exps => exps.map(exp => {
+            if (exp.id !== expenseId) return exp;
+            return { ...exp, status: approved ? "APPROVED" : "REJECTED" };
+        }));
+    }
+
+    return (
+        <div className="dashboard-container">
+             <div style={{ textAlign: "center", marginBottom: "24px" }}>
+                <h1>ExpensoMan</h1>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 10px'}}>
+                    <p>Welcome, <strong>{currentUser.name}</strong> ({currentUser.role})</p>
+                    <button onClick={onLogout} className="logout-btn" style={{margin: 0}}>Logout</button>
+                </div>
+            </div>
+            {message && <div className={`message ${message.type}`}>{message.text}</div>}
+            <div className="dashboard">
+                {(currentUser.role === "MANAGER" || currentUser.role === "ADMIN") && (
+                    <div className="card">
+                        <h2>Approval Queue</h2>
+                        {approvalQueue.length > 0 ? <ul>{approvalQueue.map(exp => (
+                            <li key={exp.id}>
+                                <span>{getUserById(exp.employeeId)?.name}: {exp.description} for ₹{exp.amount}</span>
+                                <div>
+                                    <button className="approve-btn" onClick={() => handleApproval(exp.id, true)}>Approve</button>
+                                    <button className="reject-btn" onClick={() => handleApproval(exp.id, false)}>Reject</button>
+                                </div>
+                            </li>
+                        ))}</ul> : <p>No expenses to approve.</p>}
+                    </div>
+                )}
+                <div className="card">
+                    <h2>My Submitted Expenses</h2>
+                    {myExpenses.length > 0 ? <ul>{myExpenses.map(exp => (
+                        <li key={exp.id}>
+                            <span className="expense-desc">{exp.description} ({exp.category})</span>
+                            <span className={`expense-status status-${exp.status}`}>{exp.status}</span>
+                        </li>
+                    ))}</ul> : <p>You have not submitted any expenses yet.</p>}
+                    
+                    {currentUser.role !== "ADMIN" && currentUser.role !== "MANAGER" && (
+                        <>
+                            <h2 style={{marginTop:"32px"}}>Submit New Expense</h2>
+                            <form onSubmit={submitExpense}>
+                               <input name="amount" type="number" placeholder="Amount *" required />
+                               <input name="category" type="text" placeholder="Category *" required />
+                               <input name="description" type="text" placeholder="Description *" required />
+                               <input name="date" type="date" required />
+                               <button type="submit" className="submit-btn">Submit Expense</button>
+                            </form>
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// --- COMPONENT 4: APP (MAIN CONTROLLER) ---
+function App() {
+  const [view, setView] = useState('signup');
+  const [loggedInUser, setLoggedInUser] = useState(null);
+  const [users, setUsers] = useState(INITIAL_USERS);
+  const [error, setError] = useState('');
+
+  const handleSignUp = (newUser) => {
+    if (newUser.password !== newUser.confirmPassword) { setError("Passwords do not match."); return; }
+    if (users.find(u => u.email === newUser.email)) { setError("An account with this email already exists."); return; }
+    
+    // --- MODIFIED: Use the role from the form ---
+    const userToSave = {
+        id: Date.now(),
+        name: newUser.name, email: newUser.email, password: newUser.password,
+        role: newUser.role, // Use the selected role
+        managerId: newUser.role === 'EMPLOYEE' ? 2 : null, // Assign a default manager if employee
+    };
+    setUsers(currentUsers => [...currentUsers, userToSave]);
+    setError('');
+    setView('login');
   };
 
-  return (
-    <div className="login-container">
-      <h2>ExpensoMan Login</h2>
-      <form onSubmit={handleSubmit}>
-        <label>Email</label>
-        <input 
-          type="email" 
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)} 
-          placeholder="e.g., manager@expensoman.com"
-          required 
-        />
-        <label>Password</label>
-        <input 
-          type="password" 
-          value={password}
-          onChange={(e) => setPassword(e.target.value)} 
-          placeholder="default: password"
-          required 
-        />
-        <button type="submit" className="submit-btn">Login</button>
-        {error && <div className="message error" style={{marginTop: '12px'}}>{error}</div>}
-      </form>
-    </div>
-  );
-}
-
-// --- MODIFICATION 2: DASHBOARD COMPONENT ---
-// The original App component's UI has been moved here.
-// It now receives the logged-in user and logout function as props.
-function Dashboard({ loggedInUser, onLogout }) {
-  const [users, setUsers] = useState(USERS);
-  const [expenses, setExpenses] = useState([]);
-  const [expenseForm, setExpenseForm] = useState({
-    amount: "", currency: "INR", category: "", description: "", date: ""
-  });
-  const [message, setMessage] = useState(null);
-
-  const currentUser = loggedInUser; // Use the prop for the current user
-
-  const getUserById = (id) => users.find(u => u.id === id);
-  const myExpenses = expenses.filter(e => e.employeeId === currentUser.id);
-  
-  let directReports = [];
-  if (currentUser.role === "MANAGER") {
-    directReports = users.filter(user => user.managerId === currentUser.id);
-  }
-
-  let approvalQueue = [];
-  if (currentUser.role === "MANAGER" || currentUser.role === "ADMIN") {
-    approvalQueue = expenses.filter(exp => {
-      if (exp.status !== "PENDING") return false;
-      const step = APPROVAL_SEQUENCE[exp.currentApprovalStep];
-      if (!step) return false;
-      if (currentUser.role === "MANAGER") {
-        return step.isManagerApprover === true && getUserById(exp.employeeId)?.managerId === currentUser.id;
-      }
-      if (currentUser.role === "ADMIN") {
-        return !step.isManagerApprover;
-      }
-      return false;
-    });
-  }
-
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setExpenseForm(form => ({ ...form, [name]: value }));
-  }
-
-  function submitExpense(e) {
-    e.preventDefault();
-    if (!expenseForm.amount || !expenseForm.description || !expenseForm.category || !expenseForm.date) {
-      setMessage({ type: "error", text: "Please fill all fields." });
-      return;
-    }
-    const newExpense = {
-      id: expenses.length + 1,
-      employeeId: currentUser.id,
-      amount: parseFloat(expenseForm.amount),
-      currency: expenseForm.currency,
-      category: expenseForm.category,
-      description: expenseForm.description,
-      date: expenseForm.date,
-      status: "PENDING",
-      currentApprovalStep: 0,
-      comments: []
-    };
-    setExpenses(exps => [...exps, newExpense]);
-    setExpenseForm({ amount: "", currency: "INR", category: "", description: "", date: "" });
-    setMessage({ type: "success", text: "Expense submitted." });
-  }
-
-  function handleApproval(expenseId, approved, comment = "") {
-    setExpenses(exps => exps.map(exp => {
-      if (exp.id !== expenseId) return exp;
-      const newComments = [...exp.comments, { by: currentUser.name, text: comment, date: new Date().toISOString(), approved }];
-      if (!approved) {
-        return { ...exp, status: "REJECTED", comments: newComments };
-      }
-      const nextStep = exp.currentApprovalStep + 1;
-      if (nextStep >= APPROVAL_SEQUENCE.length) {
-        return { ...exp, status: "APPROVED", currentApprovalStep: nextStep, comments: newComments };
-      }
-      return { ...exp, currentApprovalStep: nextStep, comments: newComments };
-    }));
-    setMessage({ type: "success", text: approved ? "Expense approved." : "Expense rejected." });
-  }
-  
-  const [newUserData, setNewUserData] = useState({name:"", role:"EMPLOYEE", managerId:""});
-  function handleUserChange(e) {
-    const {name, value} = e.target;
-    setNewUserData(data => ({...data, [name]: value}));
-  }
-  function addUser() {
-    if(!newUserData.name) {
-      setMessage({type:"error", text:"User name required"});
-      return;
-    }
-    const newId = users.length + 1;
-    const managerIdNum = newUserData.managerId ? parseInt(newUserData.managerId) : null;
-    setUsers(u => [...u, {id:newId, name:newUserData.name, role:newUserData.role, managerId: managerIdNum}]);
-    setNewUserData({name:"", role:"EMPLOYEE", managerId:""});
-    setMessage({type:"success", text:"User added"});
-  }
-
-  return (
-    <div>
-      <div style={{ textAlign: "center", marginBottom: "24px" }}>
-        <h1>ExpensoMan</h1>
-        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 10px'}}>
-            <p>Welcome, <strong>{currentUser.name}</strong> ({currentUser.role})</p>
-            <button onClick={onLogout} className="reject-btn" style={{margin: 0}}>Logout</button>
-        </div>
-      </div>
-
-      {message && <div className={`message ${message.type}`}>{message.text}</div>}
-
-      <div className="dashboard">
-        {/* Manager Info Card */}
-        {currentUser.role === "MANAGER" && (
-            <div className="card">
-                <h2>Manager Dashboard</h2>
-                <p style={{margin: '8px 0'}}><strong>Name:</strong> {currentUser.name}</p>
-                <p style={{margin: '8px 0'}}><strong>Email:</strong> {currentUser.email}</p>
-                <h3 style={{marginTop: '20px'}}>My Direct Reports:</h3>
-                {directReports.length > 0 ? (
-                    <ul>{directReports.map(employee => <li key={employee.id}><strong>{employee.name}</strong></li>)}</ul>
-                ) : <p>You have no direct reports.</p>}
-            </div>
-        )}
-
-        {/* Approval Queue */}
-        {(currentUser.role === "MANAGER" || currentUser.role === "ADMIN") && (
-          <div className="card">
-            <h2>{currentUser.role==="MANAGER" ? "Team Expenses to Approve" : "Expense Approval Queue"}</h2>
-            {approvalQueue.length === 0 ? <div>No expenses awaiting your approval.</div> : (
-              <ul>
-                {approvalQueue.map(exp => (
-                  <li key={exp.id}>
-                    <div className="expense-desc">
-                      <strong>{getUserById(exp.employeeId)?.name || "Unknown"}</strong>: {exp.description}
-                    </div>
-                    <div className="expense-details">
-                      <button className="approve-btn" onClick={() => handleApproval(exp.id, true)}>Approve</button>
-                      <button className="reject-btn" onClick={() => handleApproval(exp.id, false)}>Reject</button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-        
-        {/* My Expenses */}
-        <div className="card">
-            <h2>My Submitted Expenses</h2>
-            {myExpenses.length === 0 ? <p>You have not submitted any expenses yet.</p> : (
-                <ul>{myExpenses.map(exp => <li key={exp.id}><span className="expense-desc">{exp.description}</span><span className={`expense-status status-${exp.status}`}>{exp.status}</span></li>)}</ul>
-            )}
-            {currentUser.role === "EMPLOYEE" && (
-                <>
-                    <h2 style={{marginTop:"32px"}}>Submit New Expense</h2>
-                    <form onSubmit={submitExpense}>
-                        <input type="number" name="amount" onChange={handleChange} value={expenseForm.amount} placeholder="Amount *" required />
-                        <input type="text" name="category" onChange={handleChange} value={expenseForm.category} placeholder="Category *" required />
-                        <input type="text" name="description" onChange={handleChange} value={expenseForm.description} placeholder="Description *" required />
-                        <input type="date" name="date" onChange={handleChange} value={expenseForm.date} required />
-                        <button type="submit" className="submit-btn">Submit Expense</button>
-                    </form>
-                </>
-            )}
-        </div>
-        
-        {/* Admin Panel */}
-        {currentUser.role === "ADMIN" && (
-            <div className="card" style={{gridColumn: '1 / -1'}}>
-                <h2>Admin Panel — Manage Users</h2>
-                {/* User management UI from original code can be placed here */}
-            </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-
-// --- MODIFICATION 3: APP COMPONENT AS CONTROLLER ---
-// This is now the main component that controls the application's state (logged in or not).
-function App() {
-  const [loggedInUser, setLoggedInUser] = useState(null);
-  const [loginError, setLoginError] = useState('');
-
   const handleLogin = (email, password) => {
-    // Find user by email and password
-    const user = USERS.find(u => u.email === email && u.password === password);
-    
+    const user = users.find(u => u.email === email && u.password === password);
     if (user) {
       setLoggedInUser(user);
-      setLoginError(''); // Clear any previous errors
+      setError('');
+      setView('dashboard');
     } else {
-      setLoginError('Invalid email or password. Please try again.');
+      setError('Invalid credentials. Please try again.');
     }
   };
 
   const handleLogout = () => {
     setLoggedInUser(null);
+    setView('login');
+  };
+  
+  const renderView = () => {
+      switch(view) {
+          case 'dashboard':
+              return <Dashboard loggedInUser={loggedInUser} onLogout={handleLogout} allUsers={users} />;
+          case 'login':
+              return <LoginPage onLogin={handleLogin} switchToSignUp={() => { setView('signup'); setError(''); }} error={error} />;
+          case 'signup':
+          default:
+              return <SignUpPage onSignUp={handleSignUp} switchToLogin={() => { setView('login'); setError(''); }} error={error} />;
+      }
   };
 
-  // Conditional Rendering: Show LoginPage or Dashboard
   return (
-    <div>
-      {loggedInUser ? (
-        <Dashboard loggedInUser={loggedInUser} onLogout={handleLogout} />
-      ) : (
-        <LoginPage onLogin={handleLogin} error={loginError} />
-      )}
+    <div key={view} className="view-container">
+        {renderView()}
     </div>
   );
 }
 
 ReactDOM.render(<App />, document.getElementById('root'));
-
 </script>
 </body>
 </html>

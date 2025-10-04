@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approvals to Review</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for a slightly stylized look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles to better match the hand-drawn feel */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a; /* Darker background */
+        }
+        .table-container {
+            border: 1px solid #444;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            background-color: #262626; /* Slightly lighter container background */
+        }
+        .search-bar {
+            border: 1px solid #444;
+            border-radius: 0.5rem;
+            height: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 0.75rem 1rem;
+            color: #d1d5db; /* Light gray text */
+            vertical-align: middle;
+            transition: background-color 0.3s ease; /* Smooth transition for color change */
+        }
+        th {
+            font-weight: 600;
+            color: #f9fafb; /* White header text */
+            background-color: #374151; /* Darker header background */
+        }
+        thead tr:first-child th:first-child { border-top-left-radius: 0.5rem; }
+        thead tr:first-child th:last-child { border-top-right-radius: 0.5rem; }
+        tbody tr:last-child td:first-child { border-bottom-left-radius: 0.5rem; }
+        tbody tr:last-child td:last-child { border-bottom-right-radius: 0.5rem; }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            font-weight: 500;
+        }
+        .accept-btn { background-color: #166534; border: 1px solid #14532d; color: white; }
+        .accept-btn:hover:not(:disabled) { background-color: #15803d; }
+        .reject-btn { background-color: transparent; border: 1px solid #9ca3af; color: #d1d5db; }
+        .reject-btn:hover:not(:disabled) { background-color: #b91c1c; border-color: #991b1b; color: white; }
+        .btn:disabled { cursor: not-allowed; opacity: 0.7; }
+        .row-accepted td { background-color: #143622 !important; }
+        .row-rejected td { background-color: #450a0a !important; }
+        .reject-btn.rejected { background-color: #b91c1c; border-color: #991b1b; color: white; }
+        .form-input {
+            background-color: #374151;
+            border: 1px solid #4b5563;
+            color: #d1d5db;
+            border-radius: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            width: 100%;
+        }
+        .add-btn {
+            background-color: #4f46e5;
+            color: white;
+            justify-content: center;
+        }
+        /* Styles for new filter buttons */
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: 1px solid #4b5563;
+            color: #d1d5db;
+            background-color: transparent;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover {
+            background-color: #374151;
+        }
+        .filter-btn.active-filter {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+            color: white;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 md:p-10">
+
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-2xl font-semibold text-gray-200 mb-4">Approvals to review</h1>
+
+        <div class="table-container">
+            <!-- Placeholder for a search bar as seen in the image -->
+            <div class="search-bar"></div>
+
+            <!-- Filter Buttons -->
+            <div class="flex space-x-2 mb-4">
+                <button class="filter-btn active-filter" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="pending">Pending</button>
+                <button class="filter-btn" data-filter="accepted">Accepted</button>
+                <button class="filter-btn" data-filter="rejected">Rejected</button>
+            </div>
+            
+            <!-- Input Form -->
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4 p-4 border border-gray-700 rounded-lg">
+                <div>
+                    <label for="subject" class="text-xs text-gray-400">Subject</label>
+                    <input type="text" id="subject" class="form-input" >
+                </div>
+                <div>
+                    <label for="owner" class="text-xs text-gray-400">Owner</label>
+                    <input type="text" id="owner" class="form-input">
+                </div>
+                <div>
+                    <label for="category" class="text-xs text-gray-400">Category</label>
+                    <input type="text" id="category" class="form-input" >
+                </div>
+                <div>
+                    <label for="amount" class="text-xs text-gray-400">Amount ($)</label>
+                    <input type="number" id="amount" class="form-input" >
+                </div>
+                <div class="self-end">
+                    <button id="add-request-btn" class="btn add-btn">Add Request</button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full border-collapse">
+                    <thead class="text-left text-sm">
+                        <tr>
+                            <th>Approval Subject</th>
+                            <th>Request Owner</th>
+                            <th>Category</th>
+                            <th>Request Status</th>
+                            <th>
+                                Total amount
+                                <span class="block text-xs font-normal text-gray-400">(in company's currency)</span>
+                            </th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="request-body" class="text-sm">
+                        <!-- Table rows will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Box for notifications -->
+    <div id="message-box" class="fixed bottom-5 right-5 text-white py-2 px-4 rounded-lg shadow-lg transition-opacity duration-500 opacity-0 pointer-events-none bg-green-600">
+        Message goes here
+    </div>
+
+    <script>
+        let requests = [];
+        let currentFilter = 'all';
+
+        const subjectInput = document.getElementById('subject');
+        const ownerInput = document.getElementById('owner');
+        const categoryInput = document.getElementById('category');
+        const amountInput = document.getElementById('amount');
+        const addBtn = document.getElementById('add-request-btn');
+        const requestBody = document.getElementById('request-body');
+
+        function showMessage(message, type = 'success') {
+            const messageBox = document.getElementById('message-box');
+            messageBox.textContent = message;
+            messageBox.className = fixed bottom-5 right-5 text-white py-2 px-4 rounded-lg shadow-lg transition-opacity duration-500 opacity-0 pointer-events-none ${type === 'success' ? 'bg-green-600' : 'bg-red-600'};
+            messageBox.classList.remove('opacity-0');
+            setTimeout(() => { messageBox.classList.add('opacity-0'); }, 3000);
+        }
+
+        function saveRequests() {
+            localStorage.setItem('approvalRequests', JSON.stringify(requests));
+        }
+
+        function renderRequests() {
+            requestBody.innerHTML = '';
+
+            const filteredRequests = requests.filter(req => {
+                if (currentFilter === 'all') return true;
+                return req.status === currentFilter;
+            });
+
+            if (filteredRequests.length === 0) {
+                requestBody.innerHTML = <tr><td colspan="6" class="text-center text-gray-500 py-4">No requests match the current filter.</td></tr>;
+                return;
+            }
+
+            filteredRequests.forEach((req) => {
+                const originalIndex = requests.findIndex(originalReq => originalReq === req);
+                const row = document.createElement('tr');
+                let rowClass = '';
+                if (req.status === 'accepted') rowClass = 'row-accepted';
+                if (req.status === 'rejected') rowClass = 'row-rejected';
+                row.className = rowClass;
+
+                let actionButtonsHTML = '';
+                if (req.status === 'pending') {
+                    actionButtonsHTML = `
+                        <button class="btn accept-btn" onclick="handleAction(${originalIndex}, 'success')">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                            <span>Accept</span>
+                        </button>
+                        <button class="btn reject-btn" onclick="handleAction(${originalIndex}, 'error')">
+                           <svg xmlns="http://www.w.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                           <span>Reject</span>
+                        </button>`;
+                } else if (req.status === 'accepted') {
+                    actionButtonsHTML = `
+                        <button class="btn accept-btn" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                            <span>Accepted</span>
+                        </button>`;
+                } else { // rejected
+                    actionButtonsHTML = `
+                        <button class="btn reject-btn rejected" disabled>
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                           <span>Rejected</span>
+                        </button>`;
+                }
+                
+                row.innerHTML = `
+                    <td>${req.subject}</td>
+                    <td>${req.owner}</td>
+                    <td>${req.category}</td>
+                    <td class="status-cell capitalize">${req.status}</td>
+                    <td>${req.amount}$</td>
+                    <td class="flex items-center justify-center space-x-2">${actionButtonsHTML}</td>
+                `;
+                requestBody.appendChild(row);
+            });
+        }
+
+        function handleAction(index, type) {
+            const action = type === 'success' ? 'accepted' : 'rejected';
+            requests[index].status = action;
+            showMessage(Request ${action}!, type);
+            saveRequests();
+            renderRequests();
+        }
+
+        function setupFilters() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    filterButtons.forEach(btn => btn.classList.remove('active-filter'));
+                    button.classList.add('active-filter');
+                    currentFilter = button.dataset.filter;
+                    renderRequests();
+                });
+            });
+        }
+
+        addBtn.addEventListener('click', () => {
+            const subject = subjectInput.value.trim();
+            const owner = ownerInput.value.trim();
+            const category = categoryInput.value.trim();
+            const amount = amountInput.value.trim();
+
+            if (!subject || !owner || !category || !amount) {
+                showMessage('Please fill out all fields.', 'error');
+                return;
+            }
+
+            requests.push({
+                subject,
+                owner,
+                category,
+                amount,
+                status: 'pending'
+            });
+
+            saveRequests();
+            renderRequests();
+
+            // Clear inputs
+            subjectInput.value = '';
+            ownerInput.value = '';
+            categoryInput.value = '';
+            amountInput.value = '';
+        });
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            const storedRequests = localStorage.getItem('approvalRequests');
+            if (storedRequests) {
+                requests = JSON.parse(storedRequests);
+            }
+            renderRequests();
+            setupFilters();
+        });
+    </script>
+</body>
+</html>
